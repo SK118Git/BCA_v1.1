@@ -1,4 +1,4 @@
-# Makefile for Excel Analyzer project
+# Makefile for Flasc BCA project
 
 .PHONY: install install-dev install-build build clean run help
 
@@ -33,9 +33,9 @@ run:  ## Run the application directly
 	python src/main.py
 
 test-exe:  ## Test the built executable (Windows)
-	@if [ -f "dist/ExcelAnalyzer.exe" ]; then \
+	@if [ -f "dist/BCA_Tool.exe" ]; then \
 		echo "Testing executable..."; \
-		./dist/ExcelAnalyzer.exe; \
+		./dist/BCA_Tool.exe; \
 	else \
 		echo "Executable not found. Run 'make build' first."; \
 	fi

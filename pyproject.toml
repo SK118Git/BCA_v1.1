@@ -89,7 +89,7 @@ where = ["src"]  # Adjust if your code is in a different directory
 script = "src/main.py"
 
 # Output executable name
-name = "BCA Tool"
+name = "BCA_Tool"
 
 # Build as single file
 onefile = true

@@ -1,7 +1,7 @@
 @echo off
-REM Windows build script for Excel Analyzer
+REM Windows build script for BCA 
 
-echo 🔨 Building Excel Analyzer executable...
+echo 🔨 Building BCA executable...
 echo.
 
 REM Check if Python is available
@@ -21,16 +21,16 @@ echo 🚀 Starting build process...
 python build.py
 
 REM Check if build was successful
-if exist "dist\ExcelAnalyzer.exe" (
+if exist "dist\BCA_Tool.exe" (
     echo.
     echo ✅ Build completed successfully!
-    echo 📁 Executable created: dist\ExcelAnalyzer.exe
+    echo 📁 Executable created: dist\BCA_Tool.exe
     echo.
     echo Would you like to test the executable? (y/n)
     set /p choice=
     if /i "%choice%"=="y" (
         echo Testing executable...
-        dist\ExcelAnalyzer.exe
+        dist\BCA_Tool.exe
     )
 ) else (
     echo.
