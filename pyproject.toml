@@ -1,0 +1,144 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "FLASC_BCA"  # Replace with your actual project name
+version = "0.1.0"
+description = "Python frontend for Flasc's Busienss Case Anlaysis Tool"
+authors = [
+    {name = "Daniel", email = "palceholder@example.com"},  
+    {name = "Sasha", email = "placeholder@example.com"}  
+]
+readme = "README.md"
+license = {text = "MIT"}
+requires-python = ">=3.8"
+
+# Core dependencies (main functionality)
+dependencies = [
+    "pandas>=2.2.0,<3.0.0",
+    "numpy>=2.2.0,<3.0.0",
+    "openpyxl>=3.1.0,<4.0.0",
+    "xlwings>=0.33.0,<1.0.0",
+    "matplotlib>=3.10.0,<4.0.0",
+    "lxml>=5.4.0,<6.0.0",
+    "numpy-financial>=1.0.0,<2.0.0",
+]
+
+[project.optional-dependencies]
+# Development tools
+dev = [
+    "ipython>=9.2.0",
+    "jupyter>=1.0.0",
+    "ipykernel>=6.29.0",
+    "matplotlib-inline>=0.1.0",
+]
+
+# Full development environment (includes Jupyter and debugging)
+full-dev = [
+    "ipython>=9.2.0",
+    "jupyter>=1.0.0",
+    "ipykernel>=6.29.0",
+    "debugpy>=1.8.0",
+    "matplotlib-inline>=0.1.0",
+    "ipython-pygments-lexers>=1.1.0",
+]
+
+# Plotting and visualization extras
+viz = [
+    "matplotlib>=3.10.0,<4.0.0",
+    "pillow>=11.2.0,<12.0.0",
+]
+
+# All optional dependencies
+all = [
+    "ipython>=9.2.0",
+    "jupyter>=1.0.0",
+    "ipykernel>=6.29.0",
+    "debugpy>=1.8.0",
+    "matplotlib-inline>=0.1.0",
+    "ipython-pygments-lexers>=1.1.0",
+    "pillow>=11.2.0,<12.0.0",
+]
+
+# Build tools (for creating executables)
+build = [
+    "pyinstaller>=6.0.0",
+    "auto-py-to-exe>=2.0.0",  # Optional GUI for PyInstaller
+]
+
+[project.urls]
+Homepage = "https://github.com/yourusername/your-repo"  # Replace with your repo
+Repository = "https://github.com/yourusername/your-repo"  # Replace with your repo
+Issues = "https://github.com/yourusername/your-repo/issues"  # Replace with your repo
+
+# Entry point for running the application
+[project.scripts]
+bca-tool = "src/main:main"  # Assumes main.py has a main() function
+
+# Tool configurations
+[tool.setuptools.packages.find]
+where = ["src"]  # Adjust if your code is in a different directory
+
+[tool.setuptools.package-data]
+"*" = ["*.txt", "*.json", "*.csv", "*.xlsx"]
+
+# PyInstaller configuration
+[tool.pyinstaller]
+# Main script to build
+script = "src/main.py"
+
+# Output executable name
+name = "BCA Tool"
+
+# Build as single file
+onefile = true
+
+# Include icon (place icon.ico in your project root)
+icon = "icon.ico"
+
+# Hidden imports (packages that PyInstaller might miss)
+hidden_imports = [
+    "pandas",
+    "numpy",
+    "openpyxl", 
+    "xlwings",
+    "matplotlib",
+    "matplotlib.backends.backend_tkagg",
+    "lxml",
+    "numpy_financial",
+    "PIL",
+    "PIL._tkinter_finder",
+]
+
+# Additional data files to include
+datas = [
+    # Format: ["source_path", "destination_path_in_exe"]
+    # Example: ["data/*", "data"],
+    # Example: ["config.json", "."],
+]
+
+# Exclude unnecessary modules to reduce file size
+excludes = [
+    "unittest",     # Testing framework
+    "pdb",          # Debugger
+    "doctest",      # Testing
+    "difflib",      # Text comparison
+]
+
+# Additional options
+console = true          # Set to false for GUI apps (no console window)
+debug = false          # Set to true for debugging build issues
+strip = false          # Set to true to reduce file size (Linux/Mac)
+upx = false           # Set to true to compress with UPX (if installed)
+
+
+# Exclude certain patterns
+exclude = [
+    "venv/",
+    ".venv/",
+    "build/",
+    "dist/",
+    ".git/",
+    "__pycache__/"
+]
