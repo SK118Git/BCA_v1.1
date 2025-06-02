@@ -1,17 +1,16 @@
-
+# ============================================================================================================================
+# gui.py - File containg all functions that don't need to be modified, are not used for plotting, nor the GUI, not the BCA 
+# ============================================================================================================================
+# External library imports 
 import tkinter as tk
 from tkinter import ttk
 from tkinter import filedialog
 from tkinter import messagebox
-
-
 # =============================================================================
-""" Internal library imports """
-
+# Internal library imports 
 from tomodfiy import AVAILABLE_PLOTS, INPUT_FIELDS, GUI_CONFIG, STRING_BASED, CHOICE_MATRIX
 from extra import update_dict, find_index
 from bca import run 
-
 # =============================================================================
 
 class BCA_App:

@@ -1,7 +1,12 @@
+# ============================================================================================================================
+# tomodify.py - File containg all functions that don't need to be modified, are not used for plotting, nor the GUI, not the BCA 
+# ============================================================================================================================
+# External library imports 
 import numpy as np 
-
+# ============================================================================================================================
+# Internal library imports
 from openpyxl.styles import PatternFill, Font, Side
-
+# ============================================================================================================================
 # Constants 
 
 GUI_CONFIG = {
@@ -44,7 +49,7 @@ CHOICE_MATRIX= {
     "Pure Solar": ["TO BE IMPLEMENTED"]
 }
 
-
+#__________________________________________________________________________________________________________________________________________
 # Excel styling constants
 
 # Color fills
@@ -83,7 +88,8 @@ COLOR_ZONES_LONG = [
     (22, 23, COLOR_FILLS["fill_green_darker"]),  # V-W
 ]
 
-#
+
+# ============================================================================================================================
 
 def calculate_ap(df, method):
     if method == 1: #BV
@@ -120,6 +126,7 @@ def calculate_ap(df, method):
         df['Available Power [MW]'] = num_turbines*df['Wind Speed [m/s]'].apply(siemens_gamesa_power_curve)
     return df['Available Power [MW]']
 
+#__________________________________________________________________________________________________________________________________________
 def calculate_atc(df, method, input_values):
     print(method)
     if method==0: #imv-like

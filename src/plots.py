@@ -1,8 +1,14 @@
+# ============================================================================================================================
+# plots.py - File containg all functions that do the plotting  
+# ============================================================================================================================
+# External imports 
 import matplotlib.pyplot as plt
 import numpy as np 
+# ============================================================================================================================
 
+#_____________________________________________________________________________________________________________________________
+#%% Plot called: "State-of-Charge"
 def plot_soc(df):
-    #%% State-of-Charge 
 
     # Compute total throughput (sum of absolute energy changes)
     df["energy_change"] = df["end_soc_values"].diff().abs()
@@ -51,8 +57,13 @@ def plot_soc(df):
     plt.show()
     return 
 
+
+
+
+
+#_____________________________________________________________________________________________________________________________
+#%% Plot called: "Distribution-of-Power"
 def plot_dop(df, power_level):
-    #%% Distrubtion of Power
 
     # Assume df['eff_charge_discharge'] exists and contains the power data
 

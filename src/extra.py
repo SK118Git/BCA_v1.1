@@ -1,21 +1,88 @@
+# ============================================================================================================================
+# extra.py - File containg all functions that don't need to be modified, are not used for plotting, nor the GUI, not the BCA 
+# ============================================================================================================================
+# External Imports 
+#_____________________________________________________________________________________________________________________________
+# Main imports 
 import pandas as pd 
 import numpy as np
 import numpy_financial as npf
 
-import xlwings as xw
-
+#_____________________________________________________________________________________________________________________________
+# Imports required for manipulating the excel sheet 
 from openpyxl import load_workbook
 from openpyxl.styles import Border
 from openpyxl.utils import get_column_letter
 
-from tomodfiy import BOLD_FONT, THIN_BORDER, COLOR_ZONES, COLOR_ZONES_LONG
+#_____________________________________________________________________________________________________________________________
+# This library, and the associated force_excel_calc function serve to force excel to recalculate all values in the sheets as 
+# otherwise any cell defined by a formula would not be read by python 
+import xlwings as xw
 
+# ============================================================================================================================
+# Internal Imports (The required constants) 
+from tomodfiy import BOLD_FONT, THIN_BORDER, COLOR_ZONES, COLOR_ZONES_LONG
+# ============================================================================================================================
+
+
+# ============================================================================================================================
+# Functions that define methods or utilities for dictionnaries 
 
 def find_scenario_index(df, scenario):
+    """ 
+    Function purpose: Finds the row number of a given scenario to then be able to index the other values by that number 
+    Inputs: 
+        df = the dataframe (or excel sheet) where all the scenarios are stored with their respective parameters
+        scenario = the label of the scenario (ex: B7)
+    Outputs: the row number - 1 where the given scenario label is located on the excel sheet 
+    """
     index_value = df.index[df["Scenario"] == scenario].tolist()
     return index_value[0] if index_value else None  # Returns None if not found
 
+
+def update_dict(my_dict, key, new_value):
+    """ 
+    Function purpose: Updates 
+    Inputs: Takes a python dictionnary and add a value to a key
+        my_dict = any python dictionnary where each key is associated to a LIST 
+        key = the key in the dictionnary where the entry needs to be added
+        new_value = the new value to add 
+    Outputs: None
+    """
+    if key not in my_dict: 
+    # if the key doesn't exist yet then create it and directly assign the value
+        my_dict[key] = [new_value]
+    elif len(my_dict[key]) > 1:
+    # if the key has at least 2 values in its associated list, replace the second value
+        my_dict[key][1] = new_value
+    else:
+    # else add the new value to the list associated to the key 
+         my_dict[key].append(new_value)
+
+
+
+def find_index(container, search_for):
+    """ 
+    Function purpose: Finds the index of a given key in a dictionnary  
+    Inputs: 
+        container = a python dictionnary
+        search_for = the key to find
+    Outputs: the index of the key, or -1 if an error has occurred
+    """
+    try:
+        return list(container.keys()).index(search_for)
+    except ValueError:
+        return -1  # Key not found
+    
+
+# ============================================================================================================================
+# All tht follows are functions useful for the BCA 
 def safe_irr(cash_flows):
+    """ 
+    Function purpose:  Ensures the calculated irr value isn't a completely unrealistic value
+    Inputs: the cash flows
+    Outputs: a cleaned irr 
+    """
     irr = npf.irr(cash_flows)
     
     if np.isnan(irr):
@@ -28,8 +95,36 @@ def safe_irr(cash_flows):
         return irr
 
 
+# ============================================================================================================================
+# All that follows are useful in the managing of excel files:
+
+#_____________________________________________________________________________________________________________________________
+# These functions are used for managing pandas Dataframes read from Excel files
+
+def read_df(filename, df_sheetname):
+    """ 
+    Function purpose: Reads and turns into a pandas Dataframe the timeseries sheet
+    Inputs:
+        filename = the name of the excel file
+        df_sheetname = name of the Timeseries sheet
+    Outputs: pandas Dataframe of said excel sheet 
+    """
+    df = pd.read_excel(filename, sheet_name=df_sheetname, header=0, engine="openpyxl")
+    return df
+
 
 def read_pdf(filename, pdf_sheetname):
+    """ 
+    Function purpose:  Reads the excel sheet where the parameters by scenario are located 
+    Inputs: 
+        filename = the name of the excel file 
+        pdf_sheetname = the name of the excel sheet where the parameters are defiend for each scenario
+    Outputs: a pandas Dataframe of said excel sheet 
+    Note: the reason this function is different than the other is that in the original code 
+          (probably to make the calculations doable for numpy) the dataframe was manipulated in
+          a particular way. This code slightly modified the previous method to fix a few bugs that arose. 
+    """
+
      # Read Input Parameters from the param_df
     wb = load_workbook(filename, data_only=True)
     sheet = wb[pdf_sheetname]
@@ -42,38 +137,39 @@ def read_pdf(filename, pdf_sheetname):
 
     return param_df 
 
-def read_df(filename, df_sheetname):
-    df = pd.read_excel(filename, sheet_name=df_sheetname, header=0, engine="openpyxl")
-    return df
-
-def update_dict(my_dict, key, new_value):
-    if key not in my_dict:
-        my_dict[key] = [new_value]
-    elif len(my_dict[key]) > 1:
-        my_dict[key][1] = new_value
-    else:
-         my_dict[key].append(new_value)
-
-def find_index(container, search_for):
-    try:
-        return list(container.keys()).index(search_for)
-    except ValueError:
-        return -1  # Key not found
-    
-
+#_________________________________________________________________________________________________________________________________________
+# These functions define the behaviour for saving, styling and formatting to an excel sheet 
 
 def save_to_excel(filename, data, sheet_name, case_type, debug_mode):
+    """ 
+    Function purpose: Saves the result to excel 
+    Inputs: 
+        filename = the name of the excel file to save to 
+        data = the result dataframe to save 
+        sheet_name = the name of the excel sheet to save to
+        case_type = the type of case that is being studied (this modifies the formatting rule so is a necessary parameter)
+        debug_mode = if True adds some extra print statements in the code to help backtracing and debugging
+    Outputs: None
+    """
     print(f"\nWriting to {filename} on sheet called {sheet_name}... \n ")
     with pd.ExcelWriter(filename, engine='openpyxl', mode='a', if_sheet_exists= 'replace') as writer: 
         data.to_excel(writer,sheet_name=sheet_name,index=False )
 
     print("\nFormatting... \n ")
     style_excel(filename, sheet_name, case_type)
-    format_excel_mod2(filename, sheet_name, case_type, debug_mode)
+    format_excel(filename, sheet_name, case_type, debug_mode)
     print("\n Done Formatting! \n ")
     return 
 
 def style_excel(file_path, sheet_name, case_type):
+    """ 
+    Function purpose: This function does the styling for the excel sheet (the colors, column size, borders)
+    Inputs: 
+        file_path: the name of the excel file 
+        sheet_name = the name of the sheet that is being formatted
+        case_type = the type of case that is being studied 
+    Outputs:  None
+    """
     wb = load_workbook(file_path)
     ws = wb[sheet_name]
 
@@ -83,7 +179,8 @@ def style_excel(file_path, sheet_name, case_type):
     # Define color zones
     if case_type == 0:
         color_zones = COLOR_ZONES 
-    else: color_zones = COLOR_ZONES_LONG
+    else: 
+        color_zones = COLOR_ZONES_LONG
 
     # Fill first row and auto-size columns
     for start_col, end_col, fill in color_zones:
@@ -129,65 +226,18 @@ def style_excel(file_path, sheet_name, case_type):
     wb.save(file_path)
     return
 
-def format_excel(filename, sheet_name, debug_mode):
-    wb = load_workbook(filename)
-    ws = wb[sheet_name]
 
-    # Get max row
-    max_row = ws.max_row
-
-    # Column index mapping
-    col_E = 'E'
-    col_G = 'G'
-    col_range_H_to_T = [chr(c) for c in range(ord('H'), ord('T') + 1)]
-    col_U = 'U'
-    col_V = 'V'
-
-    for row in range(2, max_row + 1):  # Skip header (row 1)
-        # Column E: percentage
-        cell = ws[f'{col_E}{row}']
-        cell.number_format = '0%'
-
-        # Column G: append " hours" (convert to string)
-       # Column G: append " hours" (convert to string)
-        cell = ws[f'{col_G}{row}']
-        val = cell.value
-        if isinstance(val, (int, float)):
-            cell.value = f"{int(round(val))} hrs"
-            cell.number_format = '@'  # Text format
-        elif isinstance(val, str) and val.strip().isdigit():
-            cell.value = f"{int(val.strip())} hrs"
-            cell.number_format = '@' 
-
-        # Columns H–T: thousand separator, rounded integer
-        for col in col_range_H_to_T:
-            cell = ws[f'{col}{row}']
-            if cell.value is not None:
-                cell.value = round(cell.value)
-                cell.number_format = '#,##0'
-
-        # Column U: percentage
-        cell = ws[f'{col_U}{row}']
-        cell.number_format = '0%'
-
-        # Column V: Euro, thousand separator, rounded integer
-        cell = ws[f'{col_V}{row}']
-        if cell.value is not None:
-            cell.value = round(cell.value)
-            cell.number_format = '€#,##0'
-
-    # Save workbook
-    save_path = filename 
-    wb.save(save_path)
-    if debug_mode:
-        print("Sheet names:", wb.sheetnames)
-        print("Using sheet:", sheet_name)
-        print(f"Saved to: {save_path}")
-
-        print("Done")
-    return 
-
-def format_excel_mod2(filename, sheet_name, case_type, debug_mode):
+def format_excel(filename, sheet_name, case_type, debug_mode):
+    """ 
+    Function purpose: This function formats the values of the excel sheet
+    Inputs: 
+        filename = the name of the excel file 
+        sheet_name = the name of the sheet that is being saved 
+        case_type = the type of case that is being studied
+        debug_mode = if True enables additional print statements to help backtrace and debug 
+    Outputs: None
+    """ 
+    if debug_mode: print("Entered formatting")
     wb = load_workbook(filename)
     ws = wb[sheet_name]
     
@@ -256,8 +306,28 @@ def format_excel_mod2(filename, sheet_name, case_type, debug_mode):
     # Save workbook
     save_path = filename 
     wb.save(save_path)
+    if debug_mode:
+        print("Sheet names:", wb.sheetnames)
+        print("Using sheet:", sheet_name)
+        print(f"Saved to: {save_path}")
+
+        print("Done")
+    return
+
+
+#__________________________________________________________________________________________________________________________________
+# This code defines a function which eliminates many bugs 
 
 def force_excel_calc(filename):
+    """ 
+    Function purpose: This function forces excel to recalculate all the values in a given file
+    Inputs: 
+        filename = the name of the excel file 
+    Outputs: None
+    Note: Without this function python won't properlu read any cells defined by an expression ("= ...")
+          and as such is crucial. 
+          Without this function the code has endless problems as many key cells will be just read as empty
+    """ 
     app = xw.apps.active
     if app is None:
         app = xw.App(visible=False)

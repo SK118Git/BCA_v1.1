@@ -1,15 +1,37 @@
-
+# ============================================================================================================================
+# bca.py - File containg all functions that don't need to be modified, are not used for plotting, nor the GUI, not the BCA 
+# ============================================================================================================================
+# External Imports 
 import pandas as pd
 import numpy as np
 import numpy_financial as npf
 
+# ============================================================================================================================
+# Internal Imports 
 from extra import find_scenario_index, safe_irr, read_pdf, read_df, save_to_excel, force_excel_calc
 from plots import plot_dop, plot_soc 
 from tomodfiy import calculate_ap, calculate_atc
+# ============================================================================================================================
 
+# Notes: mofify parameter order to be homogenous, properly define parameters of run_bus_case() and replace all the try catch with if statements
 
+# This is the entry point into the BCA 
 
 def run(filename, input_values, chosen_plots, case_type, method, paste_to_excel, output_sheet_name, debug_mode):
+    """
+    Function purpose: this function serves as the entry point into the BC logic 
+    Inputs:
+        filename = the name of the excel file studied
+        input_values = a dictionnary where all the user inputed values (through the GUI) are, can also be defined manually like in tests.py = (key:string|float) 
+        chosen_plots = a dictionnary where the information is stored about which polots the user chose to do =  (key:boolean)
+        case_type = the type of case being studied
+        method = the type of method being used to calculate the available pwoer and transmission capacity 
+        paste_to_excel = determines whether or not the final result needs to be saved directly to excel, if False will just copy to clipboard
+        output_sheet_name = the sheet the result should be saved to if paste_to_excel is True
+        debug_mode = enables additional print statements for debugging and backtracing 
+    Outputs: None
+    Note: The BCA logic was split into these subfunctions to allow for modularity and the multitude of methods/cases
+    """
     force_excel_calc(filename)
     df_sheetname = input_values['Timeseries Sheet Name']
     pdf_sheetname = input_values["Param Analysis Sheet Name"]
@@ -48,10 +70,25 @@ def run(filename, input_values, chosen_plots, case_type, method, paste_to_excel,
 
     return 
 
-
+#_______________________________________________________________________________________________________________________________________________________________________________
 
 def launch_single_analysis(df, input_values, param_df, years_covered, case_type, scenario, filename, output_sheet_name, paste_to_excel, debug_mode):
-    #%% Run Parametric Analysis  
+    """
+    Function purpose: Launches a BC Analysis for a single scenario
+    Inputs:
+        df = the dataframe holding the timeseries values
+        input_values = a dictionnary where all the user inputed values (through the GUI) are, can also be defined manually like in tests.py = (key:string|float) 
+        param_df = the dataframe holding the values of the parameters for each scenario 
+        years_covered = the amount of time the timeseries values oversee (defined in the run() function)
+        case_type = the type of case being studied
+        scenario = the name of the scenario 
+        filename = the name of the excel file studied
+        output_sheet_name = the sheet the result should be saved to if paste_to_excel is True
+        paste_to_excel = determines whether or not the final result needs to be saved directly to excel, if False will just copy to clipboard
+        debug_mode = enables additional print statements for debugging and backtracing 
+    Outputs: the power level defined here (which is needed for the plots afterwards)
+    Note:
+    """
     i = find_scenario_index(param_df, scenario)
     PPA_price = param_df.loc[i, 'PPA Price']
     bal_per = param_df.loc[i, 'Balancing Market Participation']
@@ -77,7 +114,6 @@ def launch_single_analysis(df, input_values, param_df, years_covered, case_type,
         param_df.iloc[i, 7:22] = result 
 
     print("\nSimulations Complete! \n ")
-    #%%
 
     selected_data = param_df.iloc[:, 7:]
 
@@ -94,7 +130,22 @@ def launch_single_analysis(df, input_values, param_df, years_covered, case_type,
 
 
 def launch_full_analysis(df, input_values, param_df, years_covered, case_type, filename, output_sheet_name, paste_to_excel, debug_mode):
-    #%% Run Parametric Analysis  
+    """
+    Function purpose: Does the BCA for every scenario 
+    Inputs:
+        df = the dataframe holding the timeseries values
+        input_values = a dictionnary where all the user inputed values (through the GUI) are, can also be defined manually like in tests.py = (key:string|float) 
+        param_df = the dataframe holding the values of the parameters for each scenario 
+        years_covered = the amount of time the timeseries values oversee (defined in the run() function)
+        case_type = the type of case being studied
+        filename = the name of the excel file studied
+        output_sheet_name = the sheet the result should be saved to if paste_to_excel is True
+        paste_to_excel = determines whether or not the final result needs to be saved directly to excel, if False will just copy to clipboard
+        debug_mode = enables additional print statements for debugging and backtracing 
+    Outputs: the power level defined here (which is needed for the plots afterwards)
+    Outputs: None 
+    Note: The code doesn't allow you to compute plots if you chose to do every scenario for obvious performance reasons, although this could be remedied if wanted 
+    """
 
     print(f"Computing for all scenarios")
     for i in range(len(param_df)-1):  #range(86,87):  
@@ -124,7 +175,6 @@ def launch_full_analysis(df, input_values, param_df, years_covered, case_type, f
         print(f"{int((i/(len(param_df)-1)) * 100)} % done")
 
     print("\nSimulations Complete! \n ")
-    #%%
 
     selected_data = param_df.iloc[:, 7:]
 
@@ -139,8 +189,25 @@ def launch_full_analysis(df, input_values, param_df, years_covered, case_type, f
     return   
 
 
+#_______________________________________________________________________________________________________________________________________________________________________________
 
 def run_bus_case(df, input_values, PPA_price, bal_per, price_type, power_level, storage_time_hr, years_covered, case_type, solar_MWp=0):
+    """
+    Function purpose: This function is the one that actually computes the BC given the user defined inputs and the scenario parameters
+    Inputs:
+        df = the timeseries dataframe
+        input_values = the user defined inputs
+        PPA_price = 
+        bal_per = percentage of energy allocated to the balancing market 
+        price_type = either IMB or INTRA 
+        power_level 
+        storage_time_hr 
+        years_covered
+        case_type = the type of case being studied
+        solar_MWp = energy generated by solar panels? (only used if the case is based on either mixed or only solar panel usage)
+    Outputs: a dataframe called results which contains the result of the BC
+    Note:
+    """
     global cash_flows
 
     #% INPUT VALUES

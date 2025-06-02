@@ -1,6 +1,13 @@
+# ==============================================================================================
+# tests.py - File used for testing, serves as a firect entry point into the BA functions 
+# ==============================================================================================
+# Internal imports:
 from bca import run 
+# ==============================================================================================
 
 """
+Externally defined parameters that you should know: 
+(Update if necessary)
 _____________________________________________
 | case_type | wind    | wind+solar    | solar |
 |_____________________________________________
@@ -14,8 +21,12 @@ _____________________________________________
 |_____________________________________________
 
 """
+# ==============================================================================================
+# Test for IMV Gamma:
+
 
 #%% Values for testing IMV -- Test Passed 
+from bca import run
 inputs_2 = {
     "Settlement Period":15.0,
     "Storage RTE":0.7,
@@ -41,6 +52,9 @@ filename = "/Users/sashakistnassamy/Desktop/IMV Gamma - Bus Case.xlsx"
 method = 0 
 
 run(filename, inputs_2, chosen_plots, case_type, method, True, "testing", True)
+
+# ==============================================================================================
+# Test for BV 
 
 #%% Values to test BV --- test passed
 from bca import run 
@@ -70,7 +84,10 @@ method = 1
 
 run(filename,  inputs_2, chosen_plots, case_type, method, True, "testing", True)
 
-#%% Values to test Parkwind -- test not quite passed (incorrect storge opex, npv and irr)
+# ==============================================================================================
+# Test for Parkwind
+
+#%% Values to test Parkwind -- test passed
 
 from bca import run 
 inputs_2 = {
