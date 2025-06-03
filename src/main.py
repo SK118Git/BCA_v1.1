@@ -8,10 +8,10 @@ import tkinter as tk
 from gui import BCA_App
 # =============================================================================
 
-def main():
+def main() -> None:
     """
-    Main entry point for the application.
-    Inputs: None
+    Main entry point for the application. \n
+    Inputs: None \n 
     Outputs: GUI
     """
     root = tk.Tk()

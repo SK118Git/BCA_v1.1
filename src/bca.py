@@ -60,9 +60,9 @@ def run(filename, input_values, chosen_plots, case_type, method, paste_to_excel,
     years_covered = days_covered / 365.25  # Using 365.25 to account for leap years
 
     if scenario.upper() == "ALL":
-        launch_full_analysis(df, input_values, param_df, years_covered, case_type, filename, output_sheet_name, paste_to_excel, debug_mode)
+        launch_full_analysis(df, input_values, param_df, years_covered, case_type, method, filename, output_sheet_name, paste_to_excel, debug_mode)
     else:
-        power_level = launch_single_analysis(df, input_values, param_df, years_covered, case_type, scenario, filename, output_sheet_name, paste_to_excel, debug_mode)
+        power_level = launch_single_analysis(df, input_values, param_df, years_covered, case_type, method, scenario, filename, output_sheet_name, paste_to_excel, debug_mode)
         if chosen_plots['State-Of-Charge']:
             plot_soc(df)
         if chosen_plots['Distribution-Of-Power']:
@@ -72,7 +72,7 @@ def run(filename, input_values, chosen_plots, case_type, method, paste_to_excel,
 
 #_______________________________________________________________________________________________________________________________________________________________________________
 
-def launch_single_analysis(df, input_values, param_df, years_covered, case_type, scenario, filename, output_sheet_name, paste_to_excel, debug_mode):
+def launch_single_analysis(df, input_values, param_df, years_covered, case_type, method, scenario, filename, output_sheet_name, paste_to_excel, debug_mode):
     """
     Function purpose: Launches a BC Analysis for a single scenario
     Inputs:
@@ -96,7 +96,7 @@ def launch_single_analysis(df, input_values, param_df, years_covered, case_type,
     try: 
         price_type = param_df.loc[i, 'Market Type']
     except Exception:
-        if debug_mode: print(Exception)
+        if debug_mode: print(f"An error has occured with price_type assignment: {Exception}")
         price_type = ""
 
     power_level = param_df.loc[i, 'Storage Power Rating']
@@ -106,12 +106,16 @@ def launch_single_analysis(df, input_values, param_df, years_covered, case_type,
         solar_MWp = param_df.loc[i, 'Solar Installed (MWp)']
     else:
         solar_MWp = 0 
+        
     result = run_bus_case(df=df, input_values=input_values, PPA_price=PPA_price, bal_per=bal_per, price_type=price_type, power_level=power_level, storage_time_hr=storage_time_hr, years_covered=years_covered, case_type=case_type, solar_MWp=solar_MWp)
 
-    if case_type == 1:
+    if case_type == 1: 
         param_df.iloc[i, 8:24] = result
     else:
-        param_df.iloc[i, 7:22] = result 
+        if method == 1:
+            param_df.iloc[i, 8:24] = result
+        else: 
+            param_df.iloc[i, 7:22] = result 
 
     print("\nSimulations Complete! \n ")
 
@@ -123,13 +127,13 @@ def launch_single_analysis(df, input_values, param_df, years_covered, case_type,
     print("Data copied to clipboard!\n")
 
     if paste_to_excel: 
-        save_to_excel(filename, param_df, output_sheet_name, debug_mode)
+        save_to_excel(filename, param_df, output_sheet_name)
 
     return power_level # we need to obtain the power_level later for one of the plots  
 
 
 
-def launch_full_analysis(df, input_values, param_df, years_covered, case_type, filename, output_sheet_name, paste_to_excel, debug_mode):
+def launch_full_analysis(df, input_values, param_df, years_covered, case_type, method, filename, output_sheet_name, paste_to_excel, debug_mode):
     """
     Function purpose: Does the BCA for every scenario 
     Inputs:
@@ -167,10 +171,24 @@ def launch_full_analysis(df, input_values, param_df, years_covered, case_type, f
             
         result = run_bus_case(df=df, input_values=input_values, PPA_price=PPA_price, bal_per=bal_per, price_type=price_type, power_level=power_level, storage_time_hr=storage_time_hr, years_covered=years_covered, case_type=case_type, solar_MWp=solar_MWp)
 
-        if case_type == 1:
+
+
+        if case_type == 1: 
             param_df.iloc[i, 8:24] = result
         else:
-            param_df.iloc[i, 7:22] = result 
+            if method == 1:
+                #print(f"i= {i}")
+                #print("param df: ", param_df)
+                #print("result", result)
+                print("7:24")
+                param_df.iloc[i, 7:24] = result
+            else: 
+                param_df.iloc[i, 7:22] = result 
+
+        #if case_type == 1:
+        #    param_df.iloc[i, 8:24] = result
+        #else:
+        #    param_df.iloc[i, 7:22] = result 
 
         print(f"{int((i/(len(param_df)-1)) * 100)} % done")
 
@@ -184,7 +202,7 @@ def launch_full_analysis(df, input_values, param_df, years_covered, case_type, f
     print("Data copied to clipboard!\n")
 
 
-    if paste_to_excel: save_to_excel(filename, param_df, output_sheet_name, case_type, debug_mode)
+    if paste_to_excel: save_to_excel(filename, param_df, output_sheet_name)
 
     return   
 

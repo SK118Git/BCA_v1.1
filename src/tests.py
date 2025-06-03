@@ -68,7 +68,7 @@ inputs_2 = {
     "Project Life":25,
     "Discount Rate":0.0812,
     "Export Transmission Capacity":0.0, 
-    "Scenario (or 'All')":"B7",
+    "Scenario (or 'All')":"All",
     "Timeseries Sheet Name":"BorsseleV_15min_2024",
     "Param Analysis Sheet Name":"Parametric Analysis"
 }

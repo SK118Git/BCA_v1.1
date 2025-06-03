@@ -19,16 +19,21 @@ from openpyxl.utils import get_column_letter
 # otherwise any cell defined by a formula would not be read by python 
 import xlwings as xw
 
+#_____________________________________________________________________________________________________________________________
+# Imports for typing
+from typing import TypeVar, Any 
+Key = TypeVar("Key")
+
 # ============================================================================================================================
 # Internal Imports (The required constants) 
-from tomodfiy import BOLD_FONT, THIN_BORDER, COLOR_ZONES, COLOR_ZONES_LONG
+from tomodfiy import BOLD_FONT, COLOR_FILLS, THIN_BORDER
 # ============================================================================================================================
 
 
 # ============================================================================================================================
 # Functions that define methods or utilities for dictionnaries 
 
-def find_scenario_index(df, scenario):
+def find_scenario_index(df:pd.DataFrame, scenario:str) -> int :
     """ 
     Function purpose: Finds the row number of a given scenario to then be able to index the other values by that number 
     Inputs: 
@@ -37,13 +42,15 @@ def find_scenario_index(df, scenario):
     Outputs: the row number - 1 where the given scenario label is located on the excel sheet 
     """
     index_value = df.index[df["Scenario"] == scenario].tolist()
-    return index_value[0] if index_value else None  # Returns None if not found
+    if not index_value:
+        raise ValueError(f"Scenario '{scenario}' not found in DataFrame") # raise Error if not found
+    return index_value[0]  
 
 
-def update_dict(my_dict, key, new_value):
+def update_dict(my_dict:dict[Key, list[Any]], key:Key, new_value:Any) -> None:
     """ 
-    Function purpose: Updates 
-    Inputs: Takes a python dictionnary and add a value to a key
+    Function purpose: Takes a python dictionnary and add a value to a key \n
+    Inputs: 
         my_dict = any python dictionnary where each key is associated to a LIST 
         key = the key in the dictionnary where the entry needs to be added
         new_value = the new value to add 
@@ -58,10 +65,12 @@ def update_dict(my_dict, key, new_value):
     else:
     # else add the new value to the list associated to the key 
          my_dict[key].append(new_value)
+    return 
 
 
 
-def find_index(container, search_for):
+
+def find_index(container:dict[Key, Any], search_for:Key) -> int:
     """ 
     Function purpose: Finds the index of a given key in a dictionnary  
     Inputs: 
@@ -72,12 +81,12 @@ def find_index(container, search_for):
     try:
         return list(container.keys()).index(search_for)
     except ValueError:
-        return -1  # Key not found
+        raise ValueError(f"Key '{search_for}' not found in dictionnary")
     
 
 # ============================================================================================================================
 # All tht follows are functions useful for the BCA 
-def safe_irr(cash_flows):
+def safe_irr(cash_flows) -> float:
     """ 
     Function purpose:  Ensures the calculated irr value isn't a completely unrealistic value
     Inputs: the cash flows
@@ -140,7 +149,7 @@ def read_pdf(filename, pdf_sheetname):
 #_________________________________________________________________________________________________________________________________________
 # These functions define the behaviour for saving, styling and formatting to an excel sheet 
 
-def save_to_excel(filename, data, sheet_name, case_type, debug_mode):
+def save_to_excel(filename, data, sheet_name) -> None:
     """ 
     Function purpose: Saves the result to excel 
     Inputs: 
@@ -156,169 +165,199 @@ def save_to_excel(filename, data, sheet_name, case_type, debug_mode):
         data.to_excel(writer,sheet_name=sheet_name,index=False )
 
     print("\nFormatting... \n ")
-    style_excel(filename, sheet_name, case_type)
-    format_excel(filename, sheet_name, case_type, debug_mode)
+    #style_excel(filename, sheet_name, case_type)
+    style_excel_sheet(filename, sheet_name)
+    #format_excel(filename, sheet_name, case_type, debug_mode)
+    format_excel_sheet(filename, sheet_name)
     print("\n Done Formatting! \n ")
     return 
 
-def style_excel(file_path, sheet_name, case_type):
+
+
+def style_excel_sheet(filename, sheet_name) -> None:
     """ 
     Function purpose: This function does the styling for the excel sheet (the colors, column size, borders)
     Inputs: 
         file_path: the name of the excel file 
         sheet_name = the name of the sheet that is being formatted
-        case_type = the type of case that is being studied 
     Outputs:  None
     """
-    wb = load_workbook(file_path)
+    wb = load_workbook(filename)
     ws = wb[sheet_name]
 
-    bold_font = BOLD_FONT
+    # Styling definitions
     thin_border = THIN_BORDER
+    pink_fill = COLOR_FILLS['fill_purple'] 
+    cyan_fill = COLOR_FILLS['fill_cyan'] 
+    salmon_fill = COLOR_FILLS['fill_brown'] 
+    light_green_fill = COLOR_FILLS['fill_green_light'] 
+    dark_green_fill = COLOR_FILLS['fill_green_dark'] 
 
-    # Define color zones
-    if case_type == 0:
-        color_zones = COLOR_ZONES 
-    else: 
-        color_zones = COLOR_ZONES_LONG
+    headers = [cell.value for cell in ws[1]]
+    header_index = {str(h).strip().lower(): idx + 1 for idx, h in enumerate(headers)}
+    max_row = ws.max_row
+    max_col = len(headers)
 
-    # Fill first row and auto-size columns
-    for start_col, end_col, fill in color_zones:
-        for col in range(start_col, end_col + 1):
-            cell = ws.cell(row=1, column=col)
-            cell.fill = fill
-            col_letter = get_column_letter(col)
-            ws.column_dimensions[col_letter].width = max(10, len(str(cell.value)) + 2)
-    
+    def get_col(name):
+        val = header_index.get(name.lower().strip())
+        if val:
+            return val 
+        else:
+            raise ValueError("Invalid Column name")
 
-    # Bold first column (A)
-    for row in ws.iter_rows(min_row=1, max_row=ws.max_row, min_col=1, max_col=1):
-        for cell in row:
-            cell.font = bold_font
+    def add_border(cell, side_name, border_side):
+        """Safely add a border to a single side without erasing others."""
+        current = cell.border
+        cell.border = Border(
+            left=border_side if side_name == "left" else current.left,
+            right=border_side if side_name == "right" else current.right,
+            top=border_side if side_name == "top" else current.top,
+            bottom=border_side if side_name == "bottom" else current.bottom
+        )
+        return 
 
-    # Add vertical border between column A and B onward (right edge of col 1)
-    for row in range(1, ws.max_row + 1):
-        cell = ws.cell(row=row, column=1)
-        cell.border = Border(right=thin_border)
+    col_duration = get_col("duration")
+    col_storage_capex = get_col("storage capex")
+    col_storage_opex = get_col("storage opex")
+    col_irr = get_col("irr")
+    col_npv = get_col("npv")
 
-    # Add vertical border between each color zone
-    for color in color_zones:
-        for row in range(1, ws.max_row + 1):
-            cell = ws.cell(row=row, column=color[1])
-            cell.border = Border(right=thin_border)
+    ### 1. Color header cells
+    for col in range(1, max_col + 1):
+        col_letter = get_column_letter(col)
+        cell = ws[f"{col_letter}1"]
+
+        if col <= col_duration:
+            cell.fill = pink_fill
+        elif col_storage_capex and col == col_storage_capex:
+            cell.fill = salmon_fill
+        elif col_storage_opex and col == col_storage_opex:
+            cell.fill = salmon_fill
+        elif col_irr and col == col_irr:
+            cell.fill = dark_green_fill
+        elif col_npv and col == col_npv:
+            cell.fill = dark_green_fill
+        elif col_duration < col < col_storage_capex:
+            cell.fill = cyan_fill
+        elif col_storage_opex < col < col_irr:
+            cell.fill = light_green_fill
+
+    ### 2. Horizontal line between row 1 and 2 and make first row bold
+    for col in range(1, max_col + 1):
+        temp_cell = ws.cell(row=2, column=col)
+        add_border(temp_cell, "top", thin_border)
+        ws.cell(row=1, column=col).font = BOLD_FONT
 
 
-    # Draw repeating 10-row-high boxes based on color zones
-    for start_row in range(2, 102, 10):
-        end_row = start_row + 9
-        for start_col, end_col, _ in color_zones:
-            for row in range(start_row, min(end_row + 1, ws.max_row + 1)):
-                for col in range(start_col, end_col + 1):
-                    cell = ws.cell(row=row, column=col)
-                    cell.border = Border(
-                        top=thin_border if row == start_row else None,
-                        bottom=thin_border if row == end_row else None,
-                        left=thin_border if col == start_col else None,
-                        right=thin_border if col == end_col else None
-                    )
+    ### 3. Vertical line after Duration
+    if col_duration:
+        for row in range(2, max_row + 1):
+            temp_cell = ws.cell(row=row, column=col_duration) 
+            add_border(temp_cell, "right", thin_border)
 
-    # --- Save workbook ---
-    wb.save(file_path)
-    return
+    ### 4. Vertical line left of Storage Capex
+    if col_storage_capex:
+        for row in range(2, max_row + 1):
+            temp_cell = ws.cell(row=row, column=col_storage_capex)
+            add_border(temp_cell, "left", thin_border)
+
+    ### 5. Vertical line right of Storage Opex
+    if col_storage_opex:
+        for row in range(2, max_row + 1):
+            temp_cell = ws.cell(row=row, column=col_storage_opex)
+            add_border(temp_cell, "right", thin_border)
+
+    ### 6. Vertical line left of IRR
+    if col_irr:
+        for row in range(2, max_row + 1):
+            temp_cell = ws.cell(row=row, column=col_irr)
+            add_border(temp_cell, "left", thin_border)
+
+    ### 7. Vertical line right of NPV
+    if col_npv:
+        for row in range(2, max_row + 1):
+            temp_cell = ws.cell(row=row, column=col_npv)
+            add_border(temp_cell, "right", thin_border)
+
+    ### 8. Horizontal line on letter change in column A (extended across to NPV)
+    prev_letter = None
+    for row in range(2, max_row + 1):
+        val = ws.cell(row=row, column=1).value
+        if isinstance(val, str) and val:
+            first_letter = val[0].lower()
+            if prev_letter is not None and first_letter != prev_letter:
+                for col in range(1, col_npv + 1):
+                    temp_cell = ws.cell(row=row, column=col)
+                    add_border(temp_cell, "top", thin_border)
+            prev_letter = first_letter
+
+    ### 9. Auto-adjust column widths
+    for col_idx, header in enumerate(headers, start=1):
+        if header is None:
+            continue
+        if col_idx == col_irr:
+            width = len(str(header)) * 3
+        elif col_idx == col_npv:
+            width = len(str(header)) * 5
+        else:
+            width = len(str(header)) + 2
+        ws.column_dimensions[get_column_letter(col_idx)].width = width
+
+    wb.save(filename)
+
+    print("Done styling")
+    return 
 
 
-def format_excel(filename, sheet_name, case_type, debug_mode):
+def format_excel_sheet(filename, sheet_name):
     """ 
     Function purpose: This function formats the values of the excel sheet
     Inputs: 
         filename = the name of the excel file 
         sheet_name = the name of the sheet that is being saved 
-        case_type = the type of case that is being studied
-        debug_mode = if True enables additional print statements to help backtrace and debug 
     Outputs: None
     """ 
-    if debug_mode: print("Entered formatting")
     wb = load_workbook(filename)
     ws = wb[sheet_name]
-    
-    # Get max row
-    max_row = ws.max_row
-    
-    if case_type == 1:
-        color_zones = COLOR_ZONES_LONG
-    else:
-        color_zones = COLOR_ZONES
-  
-    
-    # Extract column indices from the color zones
-    zone_first = color_zones[0]      # First zone (A-G or A-H)
-    zone_second = color_zones[1]     # Second zone (H-M or I-N)
-    zone_third = color_zones[2]      # Third zone (N-O or O-P)
-    zone_fourth = color_zones[3]     # Fourth zone (P or Q)
-    zone_fifth = color_zones[4]      # Fifth zone (Q-T or R-U)
-    zone_sixth = color_zones[5]      # Sixth zone (U-V or V-W)
-    
-    # Determine column positions based on zone boundaries
-    # For percentage column: 2nd column before end of first zone
-    col_percentage_1_idx = zone_first[1] - 2  # E in normal, F in long
-    # For hours column: end of first zone
-    col_hours_idx = zone_first[1]  # G in normal, H in long
-    # For percentage column 2: first column of last zone
-    col_percentage_2_idx = zone_sixth[0]  # U in normal, V in long
-    # For euro column: second column of last zone
-    col_euro_idx = zone_sixth[1]  # V in normal, W in long
-    
-    # Range for thousand separator formatting: from second zone start to fifth zone end
-    col_range_thousands = list(range(zone_second[0], zone_fifth[1] + 1))
-    
-    for row in range(2, max_row + 1):  # Skip header (row 1)
-        # First percentage column (E in normal, F in long)
-        cell = ws.cell(row=row, column=col_percentage_1_idx)
-        cell.number_format = '0%'
-        
-        # Hours column (G in normal, H in long): append " hours" (convert to string)
-        cell = ws.cell(row=row, column=col_hours_idx)
-        val = cell.value
-        if isinstance(val, (int, float)):
-            cell.value = f"{int(round(val))} hrs"
-            cell.number_format = '@'  # Text format
-        elif isinstance(val, str) and val.strip().isdigit():
-            cell.value = f"{int(val.strip())} hrs"
-            cell.number_format = '@'
-        
-        # Thousand separator columns: thousand separator, rounded integer
-        for col_idx in col_range_thousands:
-            cell = ws.cell(row=row, column=col_idx)
-            if cell.value is not None and isinstance(cell.value, (int, float)):
-                cell.value = round(cell.value)
-                cell.number_format = '#,##0'
-        
-        # Second percentage column (U in normal, V in long)
-        cell = ws.cell(row=row, column=col_percentage_2_idx)
-        cell.number_format = '#.0%'
-        
-        # Euro column (V in normal, W in long): Euro, thousand separator, rounded integer
-        cell = ws.cell(row=row, column=col_euro_idx)
-        if cell.value is not None and isinstance(cell.value, (int, float)):
-            cell.value = round(cell.value)
-            cell.number_format = '€#,##0'
-    
-    # Save workbook
-    save_path = filename 
-    wb.save(save_path)
-    if debug_mode:
-        print("Sheet names:", wb.sheetnames)
-        print("Using sheet:", sheet_name)
-        print(f"Saved to: {save_path}")
 
-        print("Done")
-    return
+    # Mapping of columns to formatting codes
+    custom_formats = {
+        'ppa price': '#,##0.0',
+        'wind power (mw)': '#,##0.00" MW"',  
+        'solar installed (mwp)': '#,##0.00" MW"',  
+        'balancing market participation': '0%',
+        'storage power rating': '0.000" MW"',
+        'duration': '0.00" hours"',
+        'irr': '0.00%',
+        'npv': '#,##0.0" €"'
+    }
+
+
+    header = [cell.value for cell in ws[1]]
+    for col_idx, col_name in enumerate(header, start=1):
+        col_name_lc = col_name.lower() if isinstance(col_name, str) else ""
+        
+        if col_name_lc in custom_formats:
+            print(col_name_lc)
+            fmt = custom_formats[col_name_lc]
+        elif col_name:  # all other named columns
+            fmt = '#,##0.0'
+        else:
+            continue  # skip unnamed columns
+
+        for row in ws.iter_rows(min_row=2, min_col=col_idx, max_col=col_idx):
+            for cell in row:
+                cell.number_format = fmt
+    print("Done")
+    wb.save(filename)
+
+
 
 
 #__________________________________________________________________________________________________________________________________
 # This code defines a function which eliminates many bugs 
 
-def force_excel_calc(filename):
+def force_excel_calc(filename): 
     """ 
     Function purpose: This function forces excel to recalculate all the values in a given file
     Inputs: 

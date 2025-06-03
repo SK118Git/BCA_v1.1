@@ -3,26 +3,27 @@
 # ============================================================================================================================
 # External library imports 
 import numpy as np 
+import pandas as pd
 # ============================================================================================================================
 # Internal library imports
 from openpyxl.styles import PatternFill, Font, Side
 # ============================================================================================================================
-# Constants 
+# Constants used throughout the program that you may 'freely' modify (at your own risk)
 
-GUI_CONFIG = {
-    'window_title': 'FLASC Business Case Tool',
-    'window_size': '800x700',
-    'max_filename_display': 40,
-    'filename_truncate_start': 20,
-    'filename_truncate_end': 15
+GUI_CONFIG: dict[str, str|int] = {
+    'window_title': 'FLASC Business Case Tool',     # the name that the GUI window will have 
+    'window_size': '800x700',                       # size of the window (the window isn't resizable!)
+    'max_filename_display': 40,                     # the maximum length to show of the chosen file's name 
+    'filename_truncate_start': 20,                  # The first character to truncate from the displayed name of the file if > 40 
+    'filename_truncate_end': 15                     # the position from the last character to stop truncating 
 }
 
-AVAILABLE_PLOTS = [
-    "State-Of-Charge",
+AVAILABLE_PLOTS: list[str] = [                                 # Here lies all defined plots, add more if desired
+    "State-Of-Charge",                              
     "Distribution-Of-Power", 
 ]
 
-INPUT_FIELDS = [
+INPUT_FIELDS: list[str] = [                                    # Here lies all the entry-based user inputs, add more if desired
     "Settlement Period",
     "Storage RTE",
     "Green-Certificate Price",
@@ -37,13 +38,13 @@ INPUT_FIELDS = [
     "Param Analysis Sheet Name"
 ]
 
-STRING_BASED = [
+STRING_BASED: list[str] = [                                    # The names of all the entries that should be exclusively made up of a valid string, please add to this if you have added a string based entry above 
     "Scenario (or 'All')",
     "Timeseries Sheet Name",
     "Param Analysis Sheet Name"
 ]
 
-CHOICE_MATRIX= {
+CHOICE_MATRIX: dict[str, list[str]]= {                                    # Defines the different case types, and for each case type the available methods, add if desired 
     "Pure Wind":["IMV Method", "BV METHOD"],
     "Mixed Wind and Solar": ["PARKWIND METHOD"],
     "Pure Solar": ["TO BE IMPLEMENTED"]
@@ -52,8 +53,8 @@ CHOICE_MATRIX= {
 #__________________________________________________________________________________________________________________________________________
 # Excel styling constants
 
-# Color fills
-COLOR_FILLS = {
+# Color fills for excel formatting
+COLOR_FILLS: dict[str, PatternFill] = {
     "fill_purple": PatternFill(start_color="F2CEEF", end_color="F2CEEF", fill_type="solid"),        # Light purple
     "fill_cyan" : PatternFill(start_color="CAEDFB", end_color="CAEDFB", fill_type="solid"),          # Cyan
     "fill_brown" : PatternFill(start_color="FBE2D5", end_color="FBE2D5", fill_type="solid"),         # Light brown
@@ -63,40 +64,28 @@ COLOR_FILLS = {
     "fill_green_darker" : PatternFill(start_color="8ED973", end_color="8ED973", fill_type="solid"),  # Darkest green
 }
 
-# Font styles
+# Font styles for excel formatting
 BOLD_FONT = Font(bold=True)
 
-# Border styles
+# Border styles for excel formatting
 THIN_BORDER = Side(border_style="thin", color="000000")
-
-# Color zones configuration
-COLOR_ZONES = [
-    (1,  7,  COLOR_FILLS["fill_purple"]),        # A-G
-    (8,  13, COLOR_FILLS["fill_cyan"]),          # H-M
-    (14, 15, COLOR_FILLS["fill_brown"]),         # N-O
-    (16, 16, COLOR_FILLS["fill_green_light"]),   # P
-    (17, 20, COLOR_FILLS["fill_green_mid"]),     # Q-R-S-T
-    (21, 22, COLOR_FILLS["fill_green_darker"]),  # U-V
-]
-
-COLOR_ZONES_LONG = [
-    (1,  8,  COLOR_FILLS["fill_purple"]),        # A-H
-    (9,  14, COLOR_FILLS["fill_cyan"]),          # I-N
-    (15, 16, COLOR_FILLS["fill_brown"]),         # O-P
-    (17, 17, COLOR_FILLS["fill_green_light"]),   # Q
-    (18, 21, COLOR_FILLS["fill_green_mid"]),     # R-S-T-U
-    (22, 23, COLOR_FILLS["fill_green_darker"]),  # V-W
-]
-
 
 # ============================================================================================================================
 
-def calculate_ap(df, method):
+def calculate_ap(df:pd.DataFrame, method:int) -> pd.Series:
+    """
+    Function purpose: Calculated the Available Power differently depending on the chosen method 
+    Inputs:
+        df = a pandas Dataframe containing the timeseries sheet's values 
+        method = the chosen method 
+    Outputs: the column containing the values of Available Transmission Capacity that was computed
+    Notes:
+    """
     if method == 1: #BV
         df['Available Power [MW]'] = df['Potential Generation [MW]'] - df['Generation Constraint [MW]']
         df['Available Power [MW]'] = np.where(df['Available Power [MW]'] < 0, 0, df['Available Power [MW]'])
     elif method == 0: #IMV
-        def siemens_gamesa_power_curve(wind_speed):
+        def siemens_gamesa_power_curve(wind_speed:float)-> float:
             """
             Approximate power curve for Siemens Gamesa SG 14-222 DD wind turbine.
             Input: Wind speed (m/s)
@@ -127,8 +116,17 @@ def calculate_ap(df, method):
     return df['Available Power [MW]']
 
 #__________________________________________________________________________________________________________________________________________
-def calculate_atc(df, method, input_values):
-    print(method)
+def calculate_atc(df:pd.DataFrame, method:int, input_values:dict[str, float|str]) -> pd.Series:
+    """
+    Function purpose: Calculated the Available Power differently depending on the chosen method 
+    Inputs:
+        df = a pandas Dataframe containing the timeseries sheet's values 
+        method = the chosen method 
+        input_values = a dictionnary containing all the values inputted by the user 
+    Outputs: the column containing the values of Available Power that was computed
+    Notes:
+    """
+    # Replace with your actual project name
     if method==0: #imv-like
         transformer_rating = 1000 #MW
         #maximum power

@@ -3,7 +3,7 @@ requires = ["setuptools>=61.0", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "FLASC_BCA"  # Replace with your actual project name
+name = "FLASC_BCA"  
 version = "0.1.0"
 description = "Python frontend for Flasc's Busienss Case Anlaysis Tool"
 authors = [
