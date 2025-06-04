@@ -4,9 +4,11 @@
 # External library imports 
 import numpy as np 
 import pandas as pd
+from openpyxl.styles import PatternFill, Font, Side
+from typing import Callable
 # ============================================================================================================================
 # Internal library imports
-from openpyxl.styles import PatternFill, Font, Side
+from plots import plot_dop, plot_soc
 # ============================================================================================================================
 # Constants used throughout the program that you may 'freely' modify (at your own risk)
 
@@ -18,10 +20,10 @@ GUI_CONFIG: dict[str, str|int] = {
     'filename_truncate_end': 15                     # the position from the last character to stop truncating 
 }
 
-AVAILABLE_PLOTS: list[str] = [                                 # Here lies all defined plots, add more if desired
-    "State-Of-Charge",                              
-    "Distribution-Of-Power", 
-]
+AVAILABLE_PLOTS: dict[str, Callable[..., None]] = {                                 # Here lies all defined plots, add more if desired
+    "State-Of-Charge": plot_soc,                             
+    "Distribution-Of-Power": plot_dop, 
+}
 
 INPUT_FIELDS: list[str] = [                                    # Here lies all the entry-based user inputs, add more if desired
     "Settlement Period",
@@ -33,13 +35,13 @@ INPUT_FIELDS: list[str] = [                                    # Here lies all t
     "Project Life",
     "Discount Rate",
     "Export Transmission Capacity", 
-    "Scenario (or 'All')",
+    "Scenario(s) (seperate with ',' or write 'All')",
     "Timeseries Sheet Name",
     "Param Analysis Sheet Name"
 ]
 
 STRING_BASED: list[str] = [                                    # The names of all the entries that should be exclusively made up of a valid string, please add to this if you have added a string based entry above 
-    "Scenario (or 'All')",
+    "Scenario(s) (seperate with ',' or write 'All')",
     "Timeseries Sheet Name",
     "Param Analysis Sheet Name"
 ]

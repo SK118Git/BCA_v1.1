@@ -2,11 +2,13 @@
 # gui.py - File containg all functions that don't need to be modified, are not used for plotting, nor the GUI, not the BCA 
 # ============================================================================================================================
 # External library imports 
+from email import message
 import tkinter as tk
 from tkinter import ttk
 from tkinter import filedialog
 from tkinter import messagebox
 from typing import Any, cast
+import threading
 # =============================================================================
 # Internal library imports 
 from tomodfiy import AVAILABLE_PLOTS, INPUT_FIELDS, GUI_CONFIG, STRING_BASED, CHOICE_MATRIX
@@ -214,22 +216,75 @@ class BCA_App:
                     print(f"An error occured for {plot}, program will keep executing but beware potential undefined behaviour ahead")
         try:
             self.update_widgets(self.entries)
-        except Exception:
-            messagebox.showwarning("Error", "An error has occured")
+        except ValueError:
+            messagebox.showwarning("Warning!", "Some of the inputs are empty or invalid")
+            return 
+        except Exception as e:
+            messagebox.showerror("Unexpected error", f"{type(e).__name__}: {e}")
+            return 
+
+        if not(hasattr(self, "selected_file")):
+            messagebox.showwarning("Warning!", "No file selected")
             return 
 
         if debug_status:
             print(f"Current values of entries: {self.entries}")
 
         clean_input_values: dict[str, Any] =  {key: value[1] for key, value in self.entries.items()} # Actual type of values[1] is str|float 
-        clean_selected_plots: dict[str, bool] = {key: value.get() for key, value in self.selected_plots.items()}
+      
+
+        clean_selected_plots: dict[str, list[Any]] = {
+            key: [value.get(), AVAILABLE_PLOTS[key] ]
+            for key, value in self.selected_plots.items()
+            }
+
         clean_paste_to_excel: bool = self.paste_to_excel.get()
 
-        run(self.selected_file, clean_input_values,clean_selected_plots, self.case_type, self.method, clean_paste_to_excel,self.excel_output_sheet_name, debug_status)
+
+        popup = tk.Toplevel(self.root)
+        popup.title("Progress")
+        popup.geometry("350x100")
+        popup.resizable(False, False)
+
+        # Label (optional)
+        progress_label = tk.Label(popup, text="Running simulation...")
+        progress_label.pack(pady=(10, 5))
+
+        # Progress bar
+        progress = ttk.Progressbar(popup, orient='horizontal', length=300, mode='determinate')
+        progress.pack(pady=(0, 10))
+
+        thread = threading.Thread(target=self.no_error_run, args=(
+            self.selected_file,
+            self.excel_output_sheet_name, 
+            debug_status,
+            clean_paste_to_excel,
+            self.case_type,
+            self.method,
+            clean_input_values,
+            clean_selected_plots,
+            progress,
+            progress_label
+        ))
+        thread.start()
+        #run(self.selected_file, clean_input_values,clean_selected_plots, self.case_type, self.method, clean_paste_to_excel,self.excel_output_sheet_name, debug_status, progress)
 
         
         return
 
+    def no_error_run(self, selected_file:str,  excel_output_sheet_name:str, debug_status:bool, paste_to_excel:bool, case_type:int, method:int, input_values:dict[str, Any], selected_plots:dict[str, Any], progress:ttk.Progressbar, progress_label:tk.Label):
+        try:
+           run(selected_file, excel_output_sheet_name, debug_status, paste_to_excel, case_type, method, input_values, selected_plots,    progress, progress_label)
+        except AttributeError:
+            progress.stop()
+            progress_label.config(text="Error: You didn't select a file")
+        except ValueError as e:
+            progress.stop()
+            progress_label.config(text="Error: " + str(e))
+        except Exception as e:
+            progress.stop()
+            progress_label.config(text="Error: " + str(e))
+        return 
     
      
     def update_widgets(self, entries:dict[str, list[ttk.Entry | float | str]]) -> None:
@@ -263,7 +318,7 @@ class BCA_App:
             if self.debug_mode.get():
                 print(key, entries[key])
             if key in STRING_BASED:
-                if key == "Scenario (or 'All')":
+                if key == "Scenario(s) (seperate with ',' or write 'All')":
                     if isinstance(entries[key][0], ttk.Entry): 
                         entry_widget = cast(ttk.Entry, entries[key][0])
                         update_dict(entries, key, str(entry_widget.get()).upper())
@@ -345,7 +400,7 @@ class BCA_App:
         Outputs: None 
         """
         if who in ['.!entry' + str(find_index(self.entries, element)+1) for element in STRING_BASED]:
-            if who == '.!entry' + str(find_index(self.entries, "Scenario (or 'All')")+1): 
+            if who == '.!entry' + str(find_index(self.entries, "Scenario(s) (seperate with ',' or write 'All')")+1): 
                 messagebox.showwarning("Invalid Entry", "Please enter a letter followed by a number")
             else:
                 messagebox.showwarning("Invalid Entry", "Please enter an actual sheet name")
@@ -403,7 +458,6 @@ class BCA_App:
         def submit() -> None:
             selected = [plot for plot, var in self.selected_plots.items() if var.get()]
             self.excel_output_sheet_name = excel_output_entry.get()
-            print(self.excel_output_sheet_name)
             messagebox.showinfo("Selected Plots", f"Selected plots: {', '.join(selected)}")
             popup.destroy()
             return 

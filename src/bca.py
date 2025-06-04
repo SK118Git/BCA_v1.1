@@ -5,19 +5,20 @@
 import pandas as pd
 import numpy as np
 import numpy_financial as npf
-
+import time 
+from typing import Any, Optional
+from pandas._typing import Scalar
+import tkinter as tk 
+from tkinter import ttk
 # ============================================================================================================================
 # Internal Imports 
-from extra import find_scenario_index, safe_irr, read_pdf, read_df, save_to_excel, force_excel_calc
-from plots import plot_dop, plot_soc 
+from extra import find_scenario_index, safe_irr, coerce_byte
+from excel import read_pdf, read_df,save_to_excel, force_excel_calc
 from tomodfiy import calculate_ap, calculate_atc
 # ============================================================================================================================
 
-# Notes: mofify parameter order to be homogenous, properly define parameters of run_bus_case() and replace all the try catch with if statements
-
 # This is the entry point into the BCA 
-
-def run(filename, input_values, chosen_plots, case_type, method, paste_to_excel, output_sheet_name, debug_mode):
+def run(filename:str, output_sheet_name:str, debug_mode:bool, paste_to_excel:bool, case_type:int, method:int, input_values:dict[str, Any], chosen_plots:dict[str, Any],  progress_bar:Optional[ttk.Progressbar]=None, progress_label:Optional[tk.Label]=None):
     """
     Function purpose: this function serves as the entry point into the BC logic 
     Inputs:
@@ -37,7 +38,7 @@ def run(filename, input_values, chosen_plots, case_type, method, paste_to_excel,
     pdf_sheetname = input_values["Param Analysis Sheet Name"]
     df = read_df(filename, df_sheetname)
     param_df = read_pdf(filename, pdf_sheetname)
-    scenario = input_values["Scenario (or 'All')"]
+    scenario = input_values["Scenario(s) (seperate with ',' or write 'All')"]
     try:
         df['Intra-Day Prices [Euro/MWh]'] = df["Day-Ahead Prices [Euro/MWh]"] + (df["Imbalance Prices [Euro/MWh]"] - df["Day-Ahead Prices [Euro/MWh]"]) * 0.5
     except Exception:
@@ -45,7 +46,7 @@ def run(filename, input_values, chosen_plots, case_type, method, paste_to_excel,
     try:
         df['Available Power [MW]'] = calculate_ap(df, method)
     except Exception:
-        print("Didn't calculate ap")
+        if debug_mode: print("Didn't calculate ap")
         pass 
 
     df['Available Transmission Capacity [MW]'] = calculate_atc(df, method, input_values)
@@ -59,20 +60,62 @@ def run(filename, input_values, chosen_plots, case_type, method, paste_to_excel,
     # Convert to years
     years_covered = days_covered / 365.25  # Using 365.25 to account for leap years
 
+    no_plotting = False 
     if scenario.upper() == "ALL":
-        launch_full_analysis(df, input_values, param_df, years_covered, case_type, method, filename, output_sheet_name, paste_to_excel, debug_mode)
+        scenario_list = param_df["Scenario"].dropna()
+        no_plotting = True 
     else:
-        power_level = launch_single_analysis(df, input_values, param_df, years_covered, case_type, method, scenario, filename, output_sheet_name, paste_to_excel, debug_mode)
-        if chosen_plots['State-Of-Charge']:
-            plot_soc(df)
-        if chosen_plots['Distribution-Of-Power']:
-            plot_dop(df, power_level)
+        scenario_list = [word.strip() for word in scenario.split(",")]
 
+    progress_counter:int = 0
+    for scenarii in scenario_list:
+        scenario_index = find_scenario_index(param_df, scenarii)
+        (result, power_level) = launch_analysis(df, param_df, input_values,  years_covered, case_type, method, scenario_index, debug_mode)
+        progress_counter +=1
+        if not(no_plotting):
+            for key in chosen_plots:
+                if chosen_plots[key][0]:
+                    chosen_plots[key][1](df, debug_mode, power_level)
+        percent = (progress_counter/len(scenario_list)) * 100
+        if debug_mode: print(f"Progress: {percent}% done")
+        if progress_bar:
+            progress_bar['value'] = percent
+            progress_bar.update_idletasks()
+        
+    if debug_mode: print("\nSimulations Complete! \n ")
+
+    selected_data = result.iloc[:, 7:] # type: ignore
+
+    # Copy to clipboard without the index
+    selected_data.to_clipboard(index=False, header=False)
+
+    if debug_mode: print("Data copied to clipboard!\n")
+    if progress_bar and progress_label:
+            # Reset progress
+            progress_bar['value'] = 0
+            progress_bar.update_idletasks()
+
+            # Change label text
+            progress_label.config(text="Data Copied to Clipboard")
+            progress_label.update_idletasks()
+    time.sleep(0.5)
+    if paste_to_excel: 
+        if progress_bar and progress_label:
+            # Reset progress
+            progress_bar['value'] = 0
+            progress_bar.update_idletasks()
+
+            # Change label text
+            progress_label.config(text="Beginning save to excel")
+            progress_label.update_idletasks()
+
+        save_to_excel(filename, output_sheet_name, debug_mode, param_df,  progress_bar, progress_label)
+   
     return 
 
 #_______________________________________________________________________________________________________________________________________________________________________________
 
-def launch_single_analysis(df, input_values, param_df, years_covered, case_type, method, scenario, filename, output_sheet_name, paste_to_excel, debug_mode):
+def launch_analysis(df:pd.DataFrame, param_df:pd.DataFrame, input_values:dict[str,Any],  years_covered:int, case_type:int, method:int,  scenario_index:int, debug_mode:bool):
     """
     Function purpose: Launches a BC Analysis for a single scenario
     Inputs:
@@ -89,127 +132,49 @@ def launch_single_analysis(df, input_values, param_df, years_covered, case_type,
     Outputs: the power level defined here (which is needed for the plots afterwards)
     Note:
     """
-    i = find_scenario_index(param_df, scenario)
-    PPA_price = param_df.loc[i, 'PPA Price']
-    bal_per = param_df.loc[i, 'Balancing Market Participation']
+    PPA_price = param_df.loc[scenario_index, 'PPA Price']
+    PPA_price =  coerce_byte(PPA_price, [int, float])
+
+    bal_per = param_df.loc[scenario_index, 'Balancing Market Participation']
+    bal_per = coerce_byte(bal_per, [float])
 
     try: 
-        price_type = param_df.loc[i, 'Market Type']
+        price_type = param_df.loc[scenario_index, 'Market Type']
+        price_type = coerce_byte(price_type, [str])
     except Exception:
         if debug_mode: print(f"An error has occured with price_type assignment: {Exception}")
         price_type = ""
 
-    power_level = param_df.loc[i, 'Storage Power Rating']
-    storage_time_hr = param_df.loc[i, 'Duration']
+    power_level = param_df.loc[scenario_index, 'Storage Power Rating']
+    power_level = coerce_byte(power_level, [int, float])
+
+    storage_time_hr = param_df.loc[scenario_index, 'Duration']
+    storage_time_hr = coerce_byte(storage_time_hr, [int, float])
 
     if case_type == 1:
-        solar_MWp = param_df.loc[i, 'Solar Installed (MWp)']
+        solar_MWp = param_df.loc[scenario_index, 'Solar Installed (MWp)']
+        solar_MWp = coerce_byte(solar_MWp, [int, float])
     else:
         solar_MWp = 0 
-        
-    result = run_bus_case(df=df, input_values=input_values, PPA_price=PPA_price, bal_per=bal_per, price_type=price_type, power_level=power_level, storage_time_hr=storage_time_hr, years_covered=years_covered, case_type=case_type, solar_MWp=solar_MWp)
+
+    result  = pd.Series(run_bus_case(df=df, input_values=input_values, PPA_price=PPA_price, bal_per=bal_per, price_type=price_type, power_level=power_level, storage_time_hr=storage_time_hr, years_covered=years_covered, case_type=case_type, solar_MWp=solar_MWp))
 
     if case_type == 1: 
-        param_df.iloc[i, 8:24] = result
+        param_df.iloc[scenario_index, 8:24] = result
     else:
         if method == 1:
-            param_df.iloc[i, 8:24] = result
+            param_df.iloc[scenario_index, 7:24] = result
         else: 
-            param_df.iloc[i, 7:22] = result 
+            param_df.iloc[scenario_index, 7:22] = result 
 
-    print("\nSimulations Complete! \n ")
+    return (param_df, power_level)
+    
 
-    selected_data = param_df.iloc[:, 7:]
-
-    # Copy to clipboard without the index
-    selected_data.to_clipboard(index=False, header=False)
-
-    print("Data copied to clipboard!\n")
-
-    if paste_to_excel: 
-        save_to_excel(filename, param_df, output_sheet_name)
-
-    return power_level # we need to obtain the power_level later for one of the plots  
-
-
-
-def launch_full_analysis(df, input_values, param_df, years_covered, case_type, method, filename, output_sheet_name, paste_to_excel, debug_mode):
-    """
-    Function purpose: Does the BCA for every scenario 
-    Inputs:
-        df = the dataframe holding the timeseries values
-        input_values = a dictionnary where all the user inputed values (through the GUI) are, can also be defined manually like in tests.py = (key:string|float) 
-        param_df = the dataframe holding the values of the parameters for each scenario 
-        years_covered = the amount of time the timeseries values oversee (defined in the run() function)
-        case_type = the type of case being studied
-        filename = the name of the excel file studied
-        output_sheet_name = the sheet the result should be saved to if paste_to_excel is True
-        paste_to_excel = determines whether or not the final result needs to be saved directly to excel, if False will just copy to clipboard
-        debug_mode = enables additional print statements for debugging and backtracing 
-    Outputs: the power level defined here (which is needed for the plots afterwards)
-    Outputs: None 
-    Note: The code doesn't allow you to compute plots if you chose to do every scenario for obvious performance reasons, although this could be remedied if wanted 
-    """
-
-    print(f"Computing for all scenarios")
-    for i in range(len(param_df)-1):  #range(86,87):  
-        PPA_price = param_df.loc[i, 'PPA Price']
-        bal_per = param_df.loc[i, 'Balancing Market Participation']
-        try: 
-            price_type = param_df.loc[i, 'Market Type']
-        except Exception:
-            print(f"Exception type: Exception")
-            price_type = ""
-
-        power_level = param_df.loc[i, 'Storage Power Rating']
-        storage_time_hr = param_df.loc[i, 'Duration']
-
-        if case_type == 1:
-            solar_MWp = param_df.loc[i, 'Solar Installed (MWp)']
-        else:
-            solar_MWp = 0 
-            
-        result = run_bus_case(df=df, input_values=input_values, PPA_price=PPA_price, bal_per=bal_per, price_type=price_type, power_level=power_level, storage_time_hr=storage_time_hr, years_covered=years_covered, case_type=case_type, solar_MWp=solar_MWp)
-
-
-
-        if case_type == 1: 
-            param_df.iloc[i, 8:24] = result
-        else:
-            if method == 1:
-                #print(f"i= {i}")
-                #print("param df: ", param_df)
-                #print("result", result)
-                print("7:24")
-                param_df.iloc[i, 7:24] = result
-            else: 
-                param_df.iloc[i, 7:22] = result 
-
-        #if case_type == 1:
-        #    param_df.iloc[i, 8:24] = result
-        #else:
-        #    param_df.iloc[i, 7:22] = result 
-
-        print(f"{int((i/(len(param_df)-1)) * 100)} % done")
-
-    print("\nSimulations Complete! \n ")
-
-    selected_data = param_df.iloc[:, 7:]
-
-    # Copy to clipboard without the index
-    selected_data.to_clipboard(index=False, header=False)
-
-    print("Data copied to clipboard!\n")
-
-
-    if paste_to_excel: save_to_excel(filename, param_df, output_sheet_name)
-
-    return   
 
 
 #_______________________________________________________________________________________________________________________________________________________________________________
 
-def run_bus_case(df, input_values, PPA_price, bal_per, price_type, power_level, storage_time_hr, years_covered, case_type, solar_MWp=0):
+def run_bus_case(df:pd.DataFrame, input_values:dict[str, Any], PPA_price:float|int, bal_per:float, price_type:str, power_level:float|int, storage_time_hr:float|int, years_covered:int, case_type:int, solar_MWp:float|int=0) :
     """
     Function purpose: This function is the one that actually computes the BC given the user defined inputs and the scenario parameters
     Inputs:

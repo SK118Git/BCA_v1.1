@@ -8,7 +8,7 @@ import numpy as np
 
 #_____________________________________________________________________________________________________________________________
 #%% Plot called: "State-of-Charge"
-def plot_soc(df):
+def plot_soc(df, debug_mode, *args):
 
     # Compute total throughput (sum of absolute energy changes)
     df["energy_change"] = df["end_soc_values"].diff().abs()
@@ -21,8 +21,8 @@ def plot_soc(df):
     equivalent_cycles = total_throughput / battery_nominal_capacity
 
     # Display results
-    print(f"Total Throughput: {total_throughput:.2f} MWh")
-    print(f"Equivalent Full Cycles: {equivalent_cycles:.2f}")
+    if debug_mode: print(f"Total Throughput: {total_throughput:.2f} MWh")
+    if debug_mode: print(f"Equivalent Full Cycles: {equivalent_cycles:.2f}")
 
     # Define bin edges (0% to 100% in steps of 5%)
     bins = np.arange(0, 105, 5)
@@ -63,7 +63,7 @@ def plot_soc(df):
 
 #_____________________________________________________________________________________________________________________________
 #%% Plot called: "Distribution-of-Power"
-def plot_dop(df, power_level):
+def plot_dop(df, debug_mode, power_level, *args):
 
     # Assume df['eff_charge_discharge'] exists and contains the power data
 

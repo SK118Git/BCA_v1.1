@@ -26,6 +26,7 @@ _____________________________________________
 
 
 #%% Values for testing IMV -- Test Passed 
+from tomodfiy import AVAILABLE_PLOTS
 from bca import run
 inputs_2 = {
     "Settlement Period":15.0,
@@ -37,7 +38,7 @@ inputs_2 = {
     "Project Life":25,
     "Discount Rate":0.0812,
     "Export Transmission Capacity":0.0, 
-    "Scenario (or 'All')":"All",
+    "Scenario(s) (seperate with ',' or write 'All')":"All",
     "Timeseries Sheet Name":"Timeseries_Input_2022",
     "Param Analysis Sheet Name":"Parametric Analysis"
 }
@@ -47,16 +48,23 @@ chosen_plots = {
     "Distribution-Of-Power": True, 
 }
 
+
+clean_selected_plots = {
+            key: [chosen_plots[key], AVAILABLE_PLOTS[key] ]
+            for key in chosen_plots
+            }
+
 case_type = 0
 filename = "/Users/sashakistnassamy/Desktop/IMV Gamma - Bus Case.xlsx"
 method = 0 
 
-run(filename, inputs_2, chosen_plots, case_type, method, True, "testing", True)
+run(filename, "testing2", True, True, case_type, method, inputs_2, clean_selected_plots)
 
 # ==============================================================================================
 # Test for BV 
 
 #%% Values to test BV --- test passed
+from tomodfiy import AVAILABLE_PLOTS
 from bca import run 
 inputs_2 = {
     "Settlement Period":15.0,
@@ -68,7 +76,7 @@ inputs_2 = {
     "Project Life":25,
     "Discount Rate":0.0812,
     "Export Transmission Capacity":0.0, 
-    "Scenario (or 'All')":"All",
+    "Scenario(s) (seperate with ',' or write 'All')":"All",
     "Timeseries Sheet Name":"BorsseleV_15min_2024",
     "Param Analysis Sheet Name":"Parametric Analysis"
 }
@@ -78,17 +86,23 @@ chosen_plots = {
     "Distribution-Of-Power": True, 
 }
 
+
+clean_selected_plots = {
+            key: [chosen_plots[key], AVAILABLE_PLOTS[key] ]
+            for key in chosen_plots
+            }
+
 case_type = 0
 filename = "/Users/sashakistnassamy/Desktop/Borssele V - Bus Case.xlsx"
 method = 1 
 
-run(filename,  inputs_2, chosen_plots, case_type, method, True, "testing", True)
+run(filename, "testing2", True, True, case_type, method, inputs_2, clean_selected_plots)
 
 # ==============================================================================================
 # Test for Parkwind
 
 #%% Values to test Parkwind -- test passed
-
+from tomodfiy import AVAILABLE_PLOTS
 from bca import run 
 inputs_2 = {
     "Settlement Period":15.0,
@@ -100,7 +114,7 @@ inputs_2 = {
     "Project Life":30,
     "Discount Rate":0.0812,
     "Export Transmission Capacity":181.5, 
-    "Scenario (or 'All')":"All",
+    "Scenario(s) (seperate with ',' or write 'All')":"All",
     "Timeseries Sheet Name":"Timeseries_Input",
     "Param Analysis Sheet Name":"Parametric Analysis"
 }
@@ -110,11 +124,14 @@ chosen_plots = {
     "Distribution-Of-Power": True, 
 }
 
+clean_selected_plots = {
+            key: [chosen_plots[key], AVAILABLE_PLOTS[key] ]
+            for key in chosen_plots
+            }
+
 case_type = 1
 filename = "/Users/sashakistnassamy/Desktop/Parkwind - Bus Case_2.xlsx"
 method = 2 
-
-run(filename, inputs_2, chosen_plots, case_type, method, True, "testing", False)
-
+run(filename, "testing", True, True, case_type, method, inputs_2, clean_selected_plots)
 
 # %%
