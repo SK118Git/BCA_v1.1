@@ -5,40 +5,44 @@
 import pandas as pd
 import numpy as np
 import numpy_financial as npf
-import time 
+
+from time import sleep 
 from typing import Any, Optional
-from pandas._typing import Scalar
-import tkinter as tk 
-from tkinter import ttk
+from tkinter import Label 
+from tkinter.ttk import Progressbar 
 # ============================================================================================================================
 # Internal Imports 
 from extra import find_scenario_index, safe_irr, coerce_byte
 from excel import read_pdf, read_df,save_to_excel, force_excel_calc
-from tomodfiy import calculate_ap, calculate_atc
+from modifiable import calculate_ap, calculate_atc
 # ============================================================================================================================
 
 # This is the entry point into the BCA 
-def run(filename:str, output_sheet_name:str, debug_mode:bool, paste_to_excel:bool, case_type:int, method:int, input_values:dict[str, Any], chosen_plots:dict[str, Any],  progress_bar:Optional[ttk.Progressbar]=None, progress_label:Optional[tk.Label]=None):
+def run(file_name:str, output_sheet_name:str, debug_mode:bool, paste_to_excel:bool, case_type:int, method:int, input_values:dict[str, Any], chosen_plots:dict[str, Any],  progress_bar:Optional[Progressbar]=None, progress_label:Optional[Label]=None):
     """
-    Function purpose: this function serves as the entry point into the BC logic 
-    Inputs:
-        filename = the name of the excel file studied
-        input_values = a dictionnary where all the user inputed values (through the GUI) are, can also be defined manually like in tests.py = (key:string|float) 
-        chosen_plots = a dictionnary where the information is stored about which polots the user chose to do =  (key:boolean)
-        case_type = the type of case being studied
-        method = the type of method being used to calculate the available pwoer and transmission capacity 
-        paste_to_excel = determines whether or not the final result needs to be saved directly to excel, if False will just copy to clipboard
-        output_sheet_name = the sheet the result should be saved to if paste_to_excel is True
-        debug_mode = enables additional print statements for debugging and backtracing 
-    Outputs: None
+    Function purpose: this function serves as the entry point into the BC logic \n 
+    Inputs: \n
+        file_name = the name of the excel file studied \n
+        output_sheet_name = the sheet the result should be saved to if paste_to_excel is True \n
+        debug_mode = enables additional print statements for debugging and backtracing \n
+        paste_to_excel = determines whether or not the final result needs to be saved directly to excel, if False will just copy to clipboard \n
+        case_type = the type of case being studied \n
+        method = the type of method being used to calculate the available pwoer and transmission capacity \n
+        input_values = a dictionnary where all the user inputed values (through the GUI) are, can also be defined manually like in tests.py = (key:string|float) \n
+        chosen_plots = a dictionnary where the information is stored about which polots the user chose to do =  (key:boolean) \n
+        progres_bar = the progress bar, set to optional for compatibility with tests \n
+        progress_label = the label that appears above the progress bar, set to optional for compatibility with tests \n
+    Outputs: None \n
     Note: The BCA logic was split into these subfunctions to allow for modularity and the multitude of methods/cases
     """
-    force_excel_calc(filename)
-    df_sheetname = input_values['Timeseries Sheet Name']
-    pdf_sheetname = input_values["Param Analysis Sheet Name"]
-    df = read_df(filename, df_sheetname)
-    param_df = read_pdf(filename, pdf_sheetname)
-    scenario = input_values["Scenario(s) (seperate with ',' or write 'All')"]
+    force_excel_calc(file_name)
+
+    df_sheet_name:   str          = input_values['Timeseries Sheet Name']
+    param_df_sheet_name:  str          = input_values["Param Analysis Sheet Name"]
+    df:             pd.DataFrame = read_df(file_name, df_sheet_name)
+    param_df:       pd.DataFrame = read_pdf(file_name, param_df_sheet_name)
+    scenario:       str          = input_values["Scenario(s) (seperate with ',' or write 'All')"]
+
     try:
         df['Intra-Day Prices [Euro/MWh]'] = df["Day-Ahead Prices [Euro/MWh]"] + (df["Imbalance Prices [Euro/MWh]"] - df["Day-Ahead Prices [Euro/MWh]"]) * 0.5
     except Exception:
@@ -56,11 +60,14 @@ def run(filename:str, output_sheet_name:str, debug_mode:bool, paste_to_excel:boo
 
     # Compute total days covered
     days_covered = (df["Date"].max() - df["Date"].min()).days
+    days_covered = coerce_byte(days_covered, [float])
 
     # Convert to years
     years_covered = days_covered / 365.25  # Using 365.25 to account for leap years
 
     no_plotting = False 
+
+    scenario_list: pd.Series[Any] | list[str]
     if scenario.upper() == "ALL":
         scenario_list = param_df["Scenario"].dropna()
         no_plotting = True 
@@ -68,15 +75,15 @@ def run(filename:str, output_sheet_name:str, debug_mode:bool, paste_to_excel:boo
         scenario_list = [word.strip() for word in scenario.split(",")]
 
     progress_counter:int = 0
-    for scenarii in scenario_list:
-        scenario_index = find_scenario_index(param_df, scenarii)
+    for individual_scenario in scenario_list:
+        scenario_index = find_scenario_index(param_df, individual_scenario)
         (result, power_level) = launch_analysis(df, param_df, input_values,  years_covered, case_type, method, scenario_index, debug_mode)
         progress_counter +=1
         if not(no_plotting):
             for key in chosen_plots:
                 if chosen_plots[key][0]:
                     chosen_plots[key][1](df, debug_mode, power_level)
-        percent = (progress_counter/len(scenario_list)) * 100
+        percent: float = (progress_counter/len(scenario_list)) * 100
         if debug_mode: print(f"Progress: {percent}% done")
         if progress_bar:
             progress_bar['value'] = percent
@@ -84,7 +91,7 @@ def run(filename:str, output_sheet_name:str, debug_mode:bool, paste_to_excel:boo
         
     if debug_mode: print("\nSimulations Complete! \n ")
 
-    selected_data = result.iloc[:, 7:] # type: ignore
+    selected_data: pd.DataFrame = result.iloc[:, 7:] # type: ignore
 
     # Copy to clipboard without the index
     selected_data.to_clipboard(index=False, header=False)
@@ -98,7 +105,7 @@ def run(filename:str, output_sheet_name:str, debug_mode:bool, paste_to_excel:boo
             # Change label text
             progress_label.config(text="Data Copied to Clipboard")
             progress_label.update_idletasks()
-    time.sleep(0.5)
+    if not(debug_mode): sleep(0.5)
     if paste_to_excel: 
         if progress_bar and progress_label:
             # Reset progress
@@ -109,34 +116,31 @@ def run(filename:str, output_sheet_name:str, debug_mode:bool, paste_to_excel:boo
             progress_label.config(text="Beginning save to excel")
             progress_label.update_idletasks()
 
-        save_to_excel(filename, output_sheet_name, debug_mode, param_df,  progress_bar, progress_label)
+        save_to_excel(file_name, output_sheet_name, debug_mode, param_df,  progress_bar, progress_label)
    
     return 
 
 #_______________________________________________________________________________________________________________________________________________________________________________
 
-def launch_analysis(df:pd.DataFrame, param_df:pd.DataFrame, input_values:dict[str,Any],  years_covered:int, case_type:int, method:int,  scenario_index:int, debug_mode:bool):
+def launch_analysis(df:pd.DataFrame, param_df:pd.DataFrame, input_values:dict[str,Any],  years_covered:float, case_type:int, method:int,  scenario_index:int, debug_mode:bool) -> tuple[pd.DataFrame, float]:
     """
-    Function purpose: Launches a BC Analysis for a single scenario
-    Inputs:
-        df = the dataframe holding the timeseries values
-        input_values = a dictionnary where all the user inputed values (through the GUI) are, can also be defined manually like in tests.py = (key:string|float) 
-        param_df = the dataframe holding the values of the parameters for each scenario 
-        years_covered = the amount of time the timeseries values oversee (defined in the run() function)
-        case_type = the type of case being studied
-        scenario = the name of the scenario 
-        filename = the name of the excel file studied
-        output_sheet_name = the sheet the result should be saved to if paste_to_excel is True
-        paste_to_excel = determines whether or not the final result needs to be saved directly to excel, if False will just copy to clipboard
-        debug_mode = enables additional print statements for debugging and backtracing 
-    Outputs: the power level defined here (which is needed for the plots afterwards)
-    Note:
+    Function purpose: Launches a BC Analysis for a single scenario \n
+    Inputs: \n
+        df = the dataframe holding the timeseries values \n
+        param_df = the dataframe holding the values of the parameters for each scenario  \n
+        input_values = a dictionnary where all the user inputed values (through the GUI) are, can also be defined manually like in tests.py = (key:string|float) \n
+        years_covered = the amount of time the timeseries values oversee (defined in the run() function) \n
+        case_type = the type of case being studied \n
+        method = the method being sued to calculate the available power and available transmission capacity \n
+        scenario_index = the row number of the scenario \n
+        debug_mode = enables additional print statements for debugging and backtracing \n
+    Outputs: a tuple containing the result of the analysis and the power level defined here (which is needed for the plots afterwards) \n
     """
-    PPA_price = param_df.loc[scenario_index, 'PPA Price']
-    PPA_price =  coerce_byte(PPA_price, [int, float])
+    ppa_price = param_df.loc[scenario_index, 'PPA Price']
+    ppa_price =  coerce_byte(ppa_price, [int, float])
 
-    bal_per = param_df.loc[scenario_index, 'Balancing Market Participation']
-    bal_per = coerce_byte(bal_per, [float])
+    balancing_percentage = param_df.loc[scenario_index, 'Balancing Market Participation']
+    balancing_percentage = coerce_byte(balancing_percentage, [float])
 
     try: 
         price_type = param_df.loc[scenario_index, 'Market Type']
@@ -157,7 +161,7 @@ def launch_analysis(df:pd.DataFrame, param_df:pd.DataFrame, input_values:dict[st
     else:
         solar_MWp = 0 
 
-    result  = pd.Series(run_bus_case(df=df, input_values=input_values, PPA_price=PPA_price, bal_per=bal_per, price_type=price_type, power_level=power_level, storage_time_hr=storage_time_hr, years_covered=years_covered, case_type=case_type, solar_MWp=solar_MWp))
+    result  = pd.Series(run_bus_case(df=df, input_values=input_values, ppa_price=ppa_price, balancing_percentage=balancing_percentage, price_type=price_type, power_level=power_level, storage_time_hr=storage_time_hr, years_covered=years_covered, case_type=case_type, solar_MWp=solar_MWp))
 
     if case_type == 1: 
         param_df.iloc[scenario_index, 8:24] = result
@@ -174,22 +178,22 @@ def launch_analysis(df:pd.DataFrame, param_df:pd.DataFrame, input_values:dict[st
 
 #_______________________________________________________________________________________________________________________________________________________________________________
 
-def run_bus_case(df:pd.DataFrame, input_values:dict[str, Any], PPA_price:float|int, bal_per:float, price_type:str, power_level:float|int, storage_time_hr:float|int, years_covered:int, case_type:int, solar_MWp:float|int=0) :
+def run_bus_case(df:pd.DataFrame, input_values:dict[str, Any], ppa_price:float|int, balancing_percentage:float, price_type:str, power_level:float|int, storage_time_hr:float|int, years_covered:float, case_type:int, solar_MWp:float|int=0) :
     """
-    Function purpose: This function is the one that actually computes the BC given the user defined inputs and the scenario parameters
+    Function purpose: This function is the one that actually computes the BC given the user defined inputs and the scenario parameters \n
     Inputs:
-        df = the timeseries dataframe
-        input_values = the user defined inputs
-        PPA_price = 
-        bal_per = percentage of energy allocated to the balancing market 
-        price_type = either IMB or INTRA 
-        power_level 
-        storage_time_hr 
-        years_covered
-        case_type = the type of case being studied
-        solar_MWp = energy generated by solar panels? (only used if the case is based on either mixed or only solar panel usage)
-    Outputs: a dataframe called results which contains the result of the BC
-    Note:
+        df = the timeseries dataframe \n
+        input_values = the user defined inputs \n
+        ppa_price = Power Purchase Agreement Price \n
+        balancing_percentage = percentage of energy allocated to the balancing market \n
+        price_type = either IMB or INTRA \n
+        power_level = Storage power rating for a given scenario \n 
+        storage_time_hr = time energy spends in storage \n
+        years_covered = total amount of years covered \n
+        case_type = the type of case being studied \n
+        solar_MWp = energy generated by solar panels? (only used if the case is based on either mixed or only solar panel usage) \n
+    Outputs: a dataframe/list (?) called results which contains the result of the BC \n
+    Note: I tried touching this code as little as possible  
     """
     global cash_flows
 
@@ -237,11 +241,11 @@ def run_bus_case(df:pd.DataFrame, input_values:dict[str, Any], PPA_price:float|i
         #deltapower < 0: overproduction relative to Available Transmission Capacity
 
     #Balancing power [MW]
-    #df['bal_power'] = bal_per / 100 * df['Available Power [MW]'] #amount of power to be allocated to balancing market as % of available power
-    df['bal_power'] = bal_per * df['Exported Power [MW]']   #amount of power to be allocated to balancing market as % of power being exported
+    #df['bal_power'] = balancing_percentage / 100 * df['Available Power [MW]'] #amount of power to be allocated to balancing market as % of available power
+    df['bal_power'] = balancing_percentage * df['Exported Power [MW]']   #amount of power to be allocated to balancing market as % of power being exported
 
-    # PPA_price = input_values['PPA Price'].iloc[-1]
-    df['Wholesale_Price'] = PPA_price; #df['Day Ahead Price [Euro/MWh]']*(1-discount_on_wholesale) 
+    # ppa_price = input_values['PPA Price'].iloc[-1]
+    df['Wholesale_Price'] = ppa_price; #df['Day Ahead Price [Euro/MWh]']*(1-discount_on_wholesale) 
 
     #### Charging and Discharging Strategy
 
@@ -314,7 +318,7 @@ def run_bus_case(df:pd.DataFrame, input_values:dict[str, Any], PPA_price:float|i
     df['baseline_income'] = ((df['Wholesale_Price'] + green_certificate ) * df['Exported Power [MW]'] ) * settlement_period 
 
     #Total income when considering balancing market participation (no storage): directly exporting portion of energy to balancing market, e.g 85% wholesale + 15% Balancing Market
-    df['bal_income'] = ((df['Wholesale_Price']+ green_certificate) * (df['Exported Power [MW]'] * (1-bal_per)* settlement_period)) + (bal_per * df['Exported Power [MW]'] * (df["Balancing Prices"] + green_certificate) * settlement_period)
+    df['bal_income'] = ((df['Wholesale_Price']+ green_certificate) * (df['Exported Power [MW]'] * (1-balancing_percentage)* settlement_period)) + (balancing_percentage * df['Exported Power [MW]'] * (df["Balancing Prices"] + green_certificate) * settlement_period)
     # Storage Revenue (only attributed directly to storage) SIGN OF BALANCING PRICES: (-ve Balance Price = PAID TO CHARGE)
         #[A]: IDLE (Not Charging or Discharging): assign balancing market income
         #[B]: DISCHARGING: assign balancing market income corrected for what is being delivered by storage system (if balancing prices are +ve then it will increase the income)

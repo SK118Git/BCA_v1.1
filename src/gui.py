@@ -11,7 +11,7 @@ from typing import Any, cast
 import threading
 # =============================================================================
 # Internal library imports 
-from tomodfiy import AVAILABLE_PLOTS, INPUT_FIELDS, GUI_CONFIG, STRING_BASED, CHOICE_MATRIX
+from modifiable import AVAILABLE_PLOTS, INPUT_FIELDS, GUI_CONFIG, STRING_BASED, CHOICE_MATRIX
 from extra import update_dict, find_index
 from bca import run 
 # =============================================================================
@@ -352,9 +352,9 @@ class BCA_App:
         file_path: str = filedialog.askopenfilename(title="Select a file")
         if file_path:
             # Truncate if filename is too long
-            if len(file_path) > int(GUI_CONFIG['max_filename_display']):
-                start = file_path[:int(GUI_CONFIG['filename_truncate_start'])]
-                end = file_path[-int(GUI_CONFIG['filename_truncate_end']):]
+            if len(file_path) > int(GUI_CONFIG['max_file_name_display']):
+                start = file_path[:int(GUI_CONFIG['file_name_truncate_start'])]
+                end = file_path[-int(GUI_CONFIG['file_name_truncate_end']):]
                 display_path = f"{start}...{end}"
             else:
                 display_path = file_path

@@ -26,7 +26,7 @@ _____________________________________________
 
 
 #%% Values for testing IMV -- Test Passed 
-from tomodfiy import AVAILABLE_PLOTS
+from modifiable import AVAILABLE_PLOTS
 from bca import run
 inputs_2 = {
     "Settlement Period":15.0,
@@ -55,16 +55,16 @@ clean_selected_plots = {
             }
 
 case_type = 0
-filename = "/Users/sashakistnassamy/Desktop/IMV Gamma - Bus Case.xlsx"
+file_name = "/Users/sashakistnassamy/Desktop/IMV Gamma - Bus Case.xlsx"
 method = 0 
 
-run(filename, "testing2", True, True, case_type, method, inputs_2, clean_selected_plots)
+run(file_name, "testing2", True, True, case_type, method, inputs_2, clean_selected_plots)
 
 # ==============================================================================================
 # Test for BV 
 
 #%% Values to test BV --- test passed
-from tomodfiy import AVAILABLE_PLOTS
+from modifiable import AVAILABLE_PLOTS
 from bca import run 
 inputs_2 = {
     "Settlement Period":15.0,
@@ -93,16 +93,16 @@ clean_selected_plots = {
             }
 
 case_type = 0
-filename = "/Users/sashakistnassamy/Desktop/Borssele V - Bus Case.xlsx"
+file_name = "/Users/sashakistnassamy/Desktop/Borssele V - Bus Case.xlsx"
 method = 1 
 
-run(filename, "testing2", True, True, case_type, method, inputs_2, clean_selected_plots)
+run(file_name, "testing2", True, True, case_type, method, inputs_2, clean_selected_plots)
 
 # ==============================================================================================
 # Test for Parkwind
 
 #%% Values to test Parkwind -- test passed
-from tomodfiy import AVAILABLE_PLOTS
+from modifiable import AVAILABLE_PLOTS
 from bca import run 
 inputs_2 = {
     "Settlement Period":15.0,
@@ -130,8 +130,8 @@ clean_selected_plots = {
             }
 
 case_type = 1
-filename = "/Users/sashakistnassamy/Desktop/Parkwind - Bus Case_2.xlsx"
+file_name = "/Users/sashakistnassamy/Desktop/Parkwind - Bus Case_2.xlsx"
 method = 2 
-run(filename, "testing", True, True, case_type, method, inputs_2, clean_selected_plots)
+run(file_name, "testing", True, True, case_type, method, inputs_2, clean_selected_plots)
 
 # %%

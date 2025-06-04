@@ -6,9 +6,15 @@ import matplotlib.pyplot as plt
 import numpy as np 
 # ============================================================================================================================
 
-#_____________________________________________________________________________________________________________________________
-#%% Plot called: "State-of-Charge"
 def plot_soc(df, debug_mode, *args):
+    """
+    Function Purpose: Plots the State-Of-Charge \n
+    Inputs: \n
+        df = timeseries dataframe \n
+        debug_mode = if True adds some extra print statements in the code to help backtracing and debugging \n
+        *args = dummy variable that allows the function to recieve extra parameters, enabling compatibility with all other plot functions \n
+    Output: None
+    """
 
     # Compute total throughput (sum of absolute energy changes)
     df["energy_change"] = df["end_soc_values"].diff().abs()
@@ -62,8 +68,16 @@ def plot_soc(df, debug_mode, *args):
 
 
 #_____________________________________________________________________________________________________________________________
-#%% Plot called: "Distribution-of-Power"
 def plot_dop(df, debug_mode, power_level, *args):
+    """
+    Function Purpose: Plots the Distribution of Power \n
+    Inputs: \n
+        df = timeseries dataframe \n
+        debug_mode = if True adds some extra print statements in the code to help backtracing and debugging (although redundant here it allows for compatibility) \n
+        power_level = Storage power rating for a given scenario \n 
+        *args = dummy variable that allows the function to recieve extra parameters, enabling compatibility with all other plot functions \n
+    Outputs: None
+    """
 
     # Assume df['eff_charge_discharge'] exists and contains the power data
 

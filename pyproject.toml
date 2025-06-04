@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "FLASC_BCA"  
-version = "0.1.0"
+version = "0.2.0"
 description = "Python frontend for Flasc's Busienss Case Anlaysis Tool"
 authors = [
     {name = "Daniel", email = "palceholder@example.com"},  
@@ -95,7 +95,7 @@ name = "BCA_Tool"
 onefile = true
 
 # Include icon (place icon.ico in your project root)
-icon = "icon.ico"
+icon = "icon.icns"
 
 # Hidden imports (packages that PyInstaller might miss)
 hidden_imports = [
@@ -127,7 +127,7 @@ excludes = [
 ]
 
 # Additional options
-console = true          # Set to false for GUI apps (no console window)
+console = false          # Set to false for GUI apps (no console window)
 debug = false          # Set to true for debugging build issues
 strip = false          # Set to true to reduce file size (Linux/Mac)
 upx = false           # Set to true to compress with UPX (if installed)

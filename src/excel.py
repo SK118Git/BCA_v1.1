@@ -3,51 +3,53 @@
 # ============================================================================================================================
 # External Imports 
 import pandas as pd
+import xlwings as xw
 from openpyxl import load_workbook
 from openpyxl.styles import Border
 from openpyxl.utils import get_column_letter
-import xlwings as xw
+from typing import Optional
+from tkinter import Label 
+from tkinter.ttk import Progressbar
 
 # ============================================================================================================================
 # Internal Imports (The required constants) 
-from tomodfiy import BOLD_FONT, COLOR_FILLS, THIN_BORDER
+from modifiable import BOLD_FONT, COLOR_FILLS, THIN_BORDER
 
 #_____________________________________________________________________________________________________________________________
 # These functions are used for managing pandas Dataframes read from Excel files
 
-def read_df(filename, df_sheetname):
+def read_df(file_name, df_sheetname) -> pd.DataFrame:
     """ 
-    Function purpose: Reads and turns into a pandas Dataframe the timeseries sheet
-    Inputs:
-        filename = the name of the excel file
-        df_sheetname = name of the Timeseries sheet
+    Function purpose: Reads and turns into a pandas Dataframe the timeseries sheet \n
+    Inputs: \n
+        file_name = the name of the excel file \n
+        df_sheetname = name of the Timeseries sheet \n
     Outputs: pandas Dataframe of said excel sheet 
     """
-    df = pd.read_excel(filename, sheet_name=df_sheetname, header=0, engine="openpyxl")
+    df:pd.DataFrame = pd.read_excel(file_name, sheet_name=df_sheetname, header=0, engine="openpyxl")
     return df
 
 
-def read_pdf(filename, pdf_sheetname):
+def read_pdf(file_name, pdf_sheetname) -> pd.DataFrame:
     """ 
-    Function purpose:  Reads the excel sheet where the parameters by scenario are located 
-    Inputs: 
-        filename = the name of the excel file 
-        pdf_sheetname = the name of the excel sheet where the parameters are defiend for each scenario
-    Outputs: a pandas Dataframe of said excel sheet 
+    Function purpose:  Reads the excel sheet where the parameters by scenario are located \n
+    Inputs: \n
+        file_name = the name of the excel file \n
+        pdf_sheetname = the name of the excel sheet where the parameters are defiend for each scenario \n
+    Outputs: a pandas Dataframe of said excel sheet \n
     Note: the reason this function is different than the other is that in the original code 
-          (probably to make the calculations doable for numpy) the dataframe was manipulated in
+          (probably to make the calculations doable for numpy) the dataframe was manipulated in 
           a particular way. This code slightly modified the previous method to fix a few bugs that arose. 
     """
 
      # Read Input Parameters from the param_df
-    wb = load_workbook(filename, data_only=True)
+    wb = load_workbook(file_name, data_only=True)
     sheet = wb[pdf_sheetname]
 
     # Convert sheet to DataFrame manually
     data = sheet.values
     cols = next(data)   
     param_df = pd.DataFrame(data, columns=cols)
-    #param_df = pd.read_excel(filename, sheet_name="Parametric Analysis", header=0, engine="openpyxl")
 
     return param_df 
 
@@ -55,20 +57,21 @@ def read_pdf(filename, pdf_sheetname):
 #_________________________________________________________________________________________________________________________________________
 # These functions define the behaviour for saving, styling and formatting to an excel sheet 
 
-def save_to_excel(filename:str, sheet_name:str, debug_mode:bool, data:pd.DataFrame,  progress_bar=None, progress_label=None) -> None:
+def save_to_excel(file_name:str, sheet_name:str, debug_mode:bool, data:pd.DataFrame,  progress_bar:Optional[Progressbar]=None, progress_label:Optional[Label]=None) -> None:
     """ 
-    Function purpose: Saves the result to excel 
-    Inputs: 
-        filename = the name of the excel file to save to 
-        data = the result dataframe to save 
-        sheet_name = the name of the excel sheet to save to
-        case_type = the type of case that is being studied (this modifies the formatting rule so is a necessary parameter)
-        debug_mode = if True adds some extra print statements in the code to help backtracing and debugging
+    Function purpose: Saves the result to excel \n 
+    Inputs: \n
+        file_name = the name of the excel file to save to \n
+        sheet_name = the name of the excel sheet to save to \n
+        debug_mode = if True adds some extra print statements in the code to help backtracing and debugging \n
+        data = the result dataframe to save \n
+        progres_bar = the progress bar, set to optional for compatibility with tests \n
+        progress_label = the label that appears above the progress bar, set to optional for compatibility with tests \n
     Outputs: None
     """
-    if debug_mode: print(f"\nWriting to {filename} on sheet called {sheet_name}... \n ")
+    if debug_mode: print(f"\nWriting to {file_name} on sheet called {sheet_name}... \n ")
 
-    with pd.ExcelWriter(filename, engine='openpyxl', mode='a', if_sheet_exists= 'replace') as writer: 
+    with pd.ExcelWriter(file_name, engine='openpyxl', mode='a', if_sheet_exists= 'replace') as writer: 
         data.to_excel(writer,sheet_name=sheet_name,index=False )
 
     if progress_bar and progress_label:
@@ -82,7 +85,7 @@ def save_to_excel(filename:str, sheet_name:str, debug_mode:bool, data:pd.DataFra
 
 
     if debug_mode: print("\nFormatting... \n ")
-    style_excel_sheet(filename, sheet_name, debug_mode)
+    style_excel_sheet(file_name, sheet_name, debug_mode)
 
     if progress_bar and progress_label:
             # Reset progress
@@ -94,7 +97,7 @@ def save_to_excel(filename:str, sheet_name:str, debug_mode:bool, data:pd.DataFra
             progress_label.update_idletasks()
 
 
-    format_excel_sheet(filename, sheet_name, debug_mode)
+    format_excel_sheet(file_name, sheet_name, debug_mode)
     if progress_bar and progress_label:
             # Reset progress
             progress_bar['value'] = 100.00
@@ -110,15 +113,16 @@ def save_to_excel(filename:str, sheet_name:str, debug_mode:bool, data:pd.DataFra
 
 
 
-def style_excel_sheet(filename:str, sheet_name:str, debug_mode:bool) -> None:
+def style_excel_sheet(file_name:str, sheet_name:str, debug_mode:bool) -> None:
     """ 
-    Function purpose: This function does the styling for the excel sheet (the colors, column size, borders)
-    Inputs: 
-        file_path: the name of the excel file 
-        sheet_name = the name of the sheet that is being formatted
+    Function purpose: This function does the styling for the excel sheet (the colors, column size, borders) \n
+    Inputs: \n
+        file_path: the name of the excel file \n
+        sheet_name = the name of the sheet that is being formatted \n
+        debug_mode = if True adds some extra print statements in the code to help backtracing and debugging \n
     Outputs:  None
     """
-    wb = load_workbook(filename)
+    wb = load_workbook(file_name)
     ws = wb[sheet_name]
 
     # Styling definitions
@@ -239,21 +243,22 @@ def style_excel_sheet(filename:str, sheet_name:str, debug_mode:bool) -> None:
             width = len(str(header)) + 2
         ws.column_dimensions[get_column_letter(col_idx)].width = width
 
-    wb.save(filename)
+    wb.save(file_name)
 
     if debug_mode: print("Done styling")
     return 
 
 
-def format_excel_sheet(filename:str, sheet_name:str, debug_mode:bool):
+def format_excel_sheet(file_name:str, sheet_name:str, debug_mode:bool):
     """ 
-    Function purpose: This function formats the values of the excel sheet
-    Inputs: 
-        filename = the name of the excel file 
-        sheet_name = the name of the sheet that is being saved 
+    Function purpose: This function formats the values of the excel sheet \n
+    Inputs: \n
+        file_name = the name of the excel file \n
+        sheet_name = the name of the sheet that is being saved \n
+        debug_mode = if True adds some extra print statements in the code to help backtracing and debugging \n
     Outputs: None
     """ 
-    wb = load_workbook(filename)
+    wb = load_workbook(file_name)
     ws = wb[sheet_name]
 
     # Mapping of columns to formatting codes
@@ -285,7 +290,7 @@ def format_excel_sheet(filename:str, sheet_name:str, debug_mode:bool):
             for cell in row:
                 cell.number_format = fmt
     if debug_mode: print("Done")
-    wb.save(filename)
+    wb.save(file_name)
 
 
 
@@ -293,20 +298,20 @@ def format_excel_sheet(filename:str, sheet_name:str, debug_mode:bool):
 #__________________________________________________________________________________________________________________________________
 # This code defines a function which eliminates many bugs 
 
-def force_excel_calc(filename:str): 
+def force_excel_calc(file_name:str): 
     """ 
-    Function purpose: This function forces excel to recalculate all the values in a given file
-    Inputs: 
-        filename = the name of the excel file 
-    Outputs: None
+    Function purpose: This function forces excel to recalculate all the values in a given file \n
+    Inputs: \n
+        file_name = the name of the excel file \n
+    Outputs: None \n
     Note: Without this function python won't properlu read any cells defined by an expression ("= ...")
-          and as such is crucial. 
+          and as such is crucial. \n
           Without this function the code has endless problems as many key cells will be just read as empty
     """ 
     app = xw.apps.active
     if app is None:
         app = xw.App(visible=False)
-    wb = app.books.open(filename)
+    wb = app.books.open(file_name)
     wb.app.calculate()
     wb.save()
     wb.close()

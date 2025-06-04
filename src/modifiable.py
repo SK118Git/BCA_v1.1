@@ -15,9 +15,9 @@ from plots import plot_dop, plot_soc
 GUI_CONFIG: dict[str, str|int] = {
     'window_title': 'FLASC Business Case Tool',     # the name that the GUI window will have 
     'window_size': '800x700',                       # size of the window (the window isn't resizable!)
-    'max_filename_display': 40,                     # the maximum length to show of the chosen file's name 
-    'filename_truncate_start': 20,                  # The first character to truncate from the displayed name of the file if > 40 
-    'filename_truncate_end': 15                     # the position from the last character to stop truncating 
+    'max_file_name_display': 40,                     # the maximum length to show of the chosen file's name 
+    'file_name_truncate_start': 20,                  # The first character to truncate from the displayed name of the file if > 40 
+    'file_name_truncate_end': 15                     # the position from the last character to stop truncating 
 }
 
 AVAILABLE_PLOTS: dict[str, Callable[..., None]] = {                                 # Here lies all defined plots, add more if desired
@@ -76,11 +76,11 @@ THIN_BORDER = Side(border_style="thin", color="000000")
 
 def calculate_ap(df:pd.DataFrame, method:int) -> pd.Series:
     """
-    Function purpose: Calculated the Available Power differently depending on the chosen method 
-    Inputs:
-        df = a pandas Dataframe containing the timeseries sheet's values 
-        method = the chosen method 
-    Outputs: the column containing the values of Available Transmission Capacity that was computed
+    Function purpose: Calculated the Available Power differently depending on the chosen method \n 
+    Inputs: \n
+        df = a pandas Dataframe containing the timeseries sheet's values \n
+        method = the chosen method \n
+    Outputs: the column containing the values of Available Transmission Capacity that was computed \n
     Notes:
     """
     if method == 1: #BV
@@ -120,12 +120,12 @@ def calculate_ap(df:pd.DataFrame, method:int) -> pd.Series:
 #__________________________________________________________________________________________________________________________________________
 def calculate_atc(df:pd.DataFrame, method:int, input_values:dict[str, float|str]) -> pd.Series:
     """
-    Function purpose: Calculated the Available Power differently depending on the chosen method 
-    Inputs:
-        df = a pandas Dataframe containing the timeseries sheet's values 
-        method = the chosen method 
-        input_values = a dictionnary containing all the values inputted by the user 
-    Outputs: the column containing the values of Available Power that was computed
+    Function purpose: Calculated the Available Power differently depending on the chosen method \n 
+    Inputs: \n
+        df = a pandas Dataframe containing the timeseries sheet's values \n
+        method = the chosen method \n
+        input_values = a dictionnary containing all the values inputted by the user \n
+    Outputs: the column containing the values of Available Power that was computed \n
     Notes:
     """
     # Replace with your actual project name
