@@ -2,47 +2,49 @@
 # excel.py - File containg all functions that directly affect excel sheets 
 # ============================================================================================================================
 # External Imports 
+import subprocess
+import os
+import time
+import platform
 import pandas as pd
 import xlwings as xw
 from openpyxl import load_workbook
 from openpyxl.styles import Border
 from openpyxl.utils import get_column_letter
-from typing import Optional
-from tkinter import Label 
-from tkinter.ttk import Progressbar
 
 # ============================================================================================================================
 # Internal Imports (The required constants) 
+from popup import Progress_Popup
 from modifiable import BOLD_FONT, COLOR_FILLS, THIN_BORDER
+from extra import log_print
 
 #_____________________________________________________________________________________________________________________________
 # These functions are used for managing pandas Dataframes read from Excel files
 
-def read_df(file_name, df_sheetname) -> pd.DataFrame:
+def read_df(file_name:str, df_sheetname:str) -> pd.DataFrame:
     """ 
     Function purpose: Reads and turns into a pandas Dataframe the timeseries sheet \n
-    Inputs: \n
+    Inputs:
         file_name = the name of the excel file \n
         df_sheetname = name of the Timeseries sheet \n
     Outputs: pandas Dataframe of said excel sheet 
     """
-    df:pd.DataFrame = pd.read_excel(file_name, sheet_name=df_sheetname, header=0, engine="openpyxl")
+    df = pd.read_excel(file_name, sheet_name=df_sheetname, header=0, engine="openpyxl")
     return df
 
 
-def read_pdf(file_name, pdf_sheetname) -> pd.DataFrame:
+def read_pdf(file_name:str, pdf_sheetname:str) -> pd.DataFrame:
     """ 
     Function purpose:  Reads the excel sheet where the parameters by scenario are located \n
-    Inputs: \n
+    Inputs: 
         file_name = the name of the excel file \n
         pdf_sheetname = the name of the excel sheet where the parameters are defiend for each scenario \n
     Outputs: a pandas Dataframe of said excel sheet \n
-    Note: the reason this function is different than the other is that in the original code 
-          (probably to make the calculations doable for numpy) the dataframe was manipulated in 
-          a particular way. This code slightly modified the previous method to fix a few bugs that arose. 
+    Note: The reason this function is different than the other is that in the original code  (probably to make the calculations doable for numpy) 
+    the dataframe was manipulated in  a particular way. This code slightly modified the previous method to fix a few bugs that arose. 
     """
 
-     # Read Input Parameters from the param_df
+    # Read Input Parameters from the param_df
     wb = load_workbook(file_name, data_only=True)
     sheet = wb[pdf_sheetname]
 
@@ -57,57 +59,34 @@ def read_pdf(file_name, pdf_sheetname) -> pd.DataFrame:
 #_________________________________________________________________________________________________________________________________________
 # These functions define the behaviour for saving, styling and formatting to an excel sheet 
 
-def save_to_excel(file_name:str, sheet_name:str, debug_mode:bool, data:pd.DataFrame,  progress_bar:Optional[Progressbar]=None, progress_label:Optional[Label]=None) -> None:
+def save_to_excel(file_name:str, sheet_name:str, debug_mode:bool, data:pd.DataFrame, progress_pp:Progress_Popup) -> None:
     """ 
     Function purpose: Saves the result to excel \n 
-    Inputs: \n
+    Inputs:
         file_name = the name of the excel file to save to \n
         sheet_name = the name of the excel sheet to save to \n
         debug_mode = if True adds some extra print statements in the code to help backtracing and debugging \n
         data = the result dataframe to save \n
-        progres_bar = the progress bar, set to optional for compatibility with tests \n
-        progress_label = the label that appears above the progress bar, set to optional for compatibility with tests \n
+        progress_pp = a class which contains the progress bar and its label \n
     Outputs: None
     """
-    if debug_mode: print(f"\nWriting to {file_name} on sheet called {sheet_name}... \n ")
+
+    log_print(f"\nWriting to {file_name} on sheet called {sheet_name}.\n ")
 
     with pd.ExcelWriter(file_name, engine='openpyxl', mode='a', if_sheet_exists= 'replace') as writer: 
         data.to_excel(writer,sheet_name=sheet_name,index=False )
 
-    if progress_bar and progress_label:
-            # Reset progress
-            progress_bar['value'] = 33.33
-            progress_bar.update_idletasks()
-
-            # Change label text
-            progress_label.config(text="Successfully saved to excel, now styling")
-            progress_label.update_idletasks()
+    progress_pp.update_vals("Successfully saved to excel, now styling.", 33.33)
+  
 
 
-    if debug_mode: print("\nFormatting... \n ")
     style_excel_sheet(file_name, sheet_name, debug_mode)
-
-    if progress_bar and progress_label:
-            # Reset progress
-            progress_bar['value'] = 66.66
-            progress_bar.update_idletasks()
-
-            # Change label text
-            progress_label.config(text="Successfully styled, now formatting")
-            progress_label.update_idletasks()
+    progress_pp.update_vals("Successfully styled, now formatting.", 66.66)
 
 
     format_excel_sheet(file_name, sheet_name, debug_mode)
-    if progress_bar and progress_label:
-            # Reset progress
-            progress_bar['value'] = 100.00
-            progress_bar.update_idletasks()
-
-            # Change label text
-            progress_label.config(text="Successfully formatted! \n Program Execution Complete")
-            progress_label.update_idletasks()
-
-    if debug_mode: print("\n Done Formatting! \n ")
+    progress_pp.update_vals("Successfully formatted! \n Program Execution Complete.", 100.00)
+    
 
     return 
 
@@ -116,12 +95,15 @@ def save_to_excel(file_name:str, sheet_name:str, debug_mode:bool, data:pd.DataFr
 def style_excel_sheet(file_name:str, sheet_name:str, debug_mode:bool) -> None:
     """ 
     Function purpose: This function does the styling for the excel sheet (the colors, column size, borders) \n
-    Inputs: \n
+    Inputs: 
         file_path: the name of the excel file \n
         sheet_name = the name of the sheet that is being formatted \n
         debug_mode = if True adds some extra print statements in the code to help backtracing and debugging \n
     Outputs:  None
     """
+
+    log_print("Styling... \n ")
+
     wb = load_workbook(file_name)
     ws = wb[sheet_name]
 
@@ -245,19 +227,21 @@ def style_excel_sheet(file_name:str, sheet_name:str, debug_mode:bool) -> None:
 
     wb.save(file_name)
 
-    if debug_mode: print("Done styling")
+    log_print("Done styling.")
     return 
 
 
 def format_excel_sheet(file_name:str, sheet_name:str, debug_mode:bool):
     """ 
     Function purpose: This function formats the values of the excel sheet \n
-    Inputs: \n
+    Inputs: 
         file_name = the name of the excel file \n
         sheet_name = the name of the sheet that is being saved \n
         debug_mode = if True adds some extra print statements in the code to help backtracing and debugging \n
     Outputs: None
     """ 
+
+    log_print("Formatting columns: \n ")
     wb = load_workbook(file_name)
     ws = wb[sheet_name]
 
@@ -279,7 +263,7 @@ def format_excel_sheet(file_name:str, sheet_name:str, debug_mode:bool):
         col_name_lc = col_name.lower() if isinstance(col_name, str) else ""
         
         if col_name_lc in custom_formats:
-            if debug_mode: print(col_name_lc)
+            log_print(f"\t Doing: {col_name_lc}.")
             fmt = custom_formats[col_name_lc]
         elif col_name:  # all other named columns
             fmt = '#,##0.0'
@@ -289,8 +273,9 @@ def format_excel_sheet(file_name:str, sheet_name:str, debug_mode:bool):
         for row in ws.iter_rows(min_row=2, min_col=col_idx, max_col=col_idx):
             for cell in row:
                 cell.number_format = fmt
-    if debug_mode: print("Done")
+    log_print("Done Formatting!")
     wb.save(file_name)
+    return 
 
 
 
@@ -298,24 +283,69 @@ def format_excel_sheet(file_name:str, sheet_name:str, debug_mode:bool):
 #__________________________________________________________________________________________________________________________________
 # This code defines a function which eliminates many bugs 
 
-def force_excel_calc(file_name:str): 
-    """ 
-    Function purpose: This function forces excel to recalculate all the values in a given file \n
-    Inputs: \n
+def force_excel_calc(file_name) -> bool:
+    """
+    Function purpose: Force Excel to recalculate all formulas. \n
+    Inputs: 
         file_name = the name of the excel file \n
-    Outputs: None \n
-    Note: Without this function python won't properlu read any cells defined by an expression ("= ...")
-          and as such is crucial. \n
-          Without this function the code has endless problems as many key cells will be just read as empty
-    """ 
-    app = xw.apps.active
-    if app is None:
-        app = xw.App(visible=False)
-    wb = app.books.open(file_name)
-    wb.app.calculate()
-    wb.save()
-    wb.close()
-    app.quit()
-    return 
+    Outputs: Whether or not the operation was successful as a boolean \n
+    Note: On macOS, uses AppleScript only to trigger the automation permission prompt,
+          then uses xlwings for actual recalculation.
+    """
+    is_macos: bool = platform.system() == 'Darwin'
 
+    if is_macos:
+        log_print("Running on macOS...")
 
+        abs_path = os.path.abspath(file_name)
+
+        # This triggers the Automation permission prompt
+        log_print("Triggering macOS Automation prompt...")
+        try:
+            trigger_script = f'tell application "Microsoft Excel" to get name of active workbook'
+            result = subprocess.run(['osascript', '-e', trigger_script], capture_output=True, text=True)
+            log_print(f"osascript result: {result.stderr.strip()}")
+        except Exception as e:
+            log_print(f"Error while triggering permission: {e}")
+
+        time.sleep(2)
+
+        # Now try xlwings (should work if permission was granted)
+        try:
+            log_print("Using xlwings to recalculate Excel formulas...")
+            app = xw.App(visible=False)
+            wb = app.books.open(file_name)
+            wb.app.calculate()
+            wb.save()
+            wb.close()
+            app.quit()
+            log_print(f"Recalculation complete: {file_name}.")
+            return True
+
+        except Exception as e:
+            log_print(f"Alert, xlwings error: {e}")
+            if "-1743" in str(e) or "not authorized" in str(e).lower():
+                log_print("Automation permission denied.")
+                log_print("Go to System Settings -> Privacy & Security -> Automation.")
+                log_print("Enable control of Microsoft Excel for your app.")
+            return False
+
+    else:
+        log_print("Running on non-macOS system...")
+        try:
+            app = xw.App(visible=False)
+            wb = app.books.open(file_name)
+            wb.app.calculate()
+            wb.save()
+            wb.close()
+            app.quit()
+            log_print(f"Successfully recalculated: {file_name}.")
+            return True
+        except Exception as e:
+            log_print(f"Alert, xlwings error: {e}")
+            return False
+        
+    # If we get here, everything failed
+    log_print("All automated methods failed.")
+    log_print("Please manually open the Excel file, press Ctrl+Shift+F9 to recalculate, then save.")
+    return False

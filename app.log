@@ -1,0 +1,123 @@
+2025-06-05 11:24:03,319 - ==================================================
+2025-06-05 11:24:03,319 - NEW SESSION STARTED
+2025-06-05 11:24:03,320 - ==================================================
+2025-06-05 11:24:03,320 - Testing format 1: open "/Users/sashakistnassamy/Desktop/IMV Gamma - Bus Case.xlsx"
+2025-06-05 11:24:04,628 - Result: SUCCESS
+2025-06-05 11:24:04,628 - ✅ Format 1 worked!
+2025-06-05 11:24:48,461 - ==================================================
+2025-06-05 11:24:48,461 - NEW SESSION STARTED
+2025-06-05 11:24:48,461 - ==================================================
+2025-06-05 14:47:32,822 - ==================================================
+2025-06-05 14:47:32,822 - NEW SESSION STARTED
+2025-06-05 14:47:32,822 - ==================================================
+2025-06-05 14:57:20,138 - ==================================================
+2025-06-05 14:57:20,138 - NEW SESSION STARTED
+2025-06-05 14:57:20,138 - ==================================================
+2025-06-05 14:57:37,350 - ==================================================
+2025-06-05 14:57:37,350 - NEW SESSION STARTED
+2025-06-05 14:57:37,350 - ==================================================
+2025-06-05 14:58:34,902 - ==================================================
+2025-06-05 14:58:34,902 - NEW SESSION STARTED
+2025-06-05 14:58:34,902 - ==================================================
+2025-06-05 14:58:42,773 - ==================================================
+2025-06-05 14:58:42,773 - NEW SESSION STARTED
+2025-06-05 14:58:42,773 - ==================================================
+2025-06-05 14:58:45,071 - ==================================================
+2025-06-05 14:58:45,071 - NEW SESSION STARTED
+2025-06-05 14:58:45,071 - ==================================================
+2025-06-05 15:01:22,790 - ==================================================
+2025-06-05 15:01:22,790 - NEW SESSION STARTED
+2025-06-05 15:01:22,790 - ==================================================
+2025-06-05 15:02:45,943 - Running on macOS...
+2025-06-05 15:02:45,943 - Triggering macOS Automation prompt...
+2025-06-05 15:02:46,123 - osascript result: 
+2025-06-05 15:02:48,125 - Using xlwings to recalculate Excel formulas...
+2025-06-05 15:02:52,656 - Recalculation complete: /Users/sashakistnassamy/Desktop/IMV Gamma - Bus Case.xlsx
+2025-06-05 15:03:26,792 - Currently in execution of launch_button function
+2025-06-05 15:03:26,794 - State of plot called: State-Of-Charge, True
+2025-06-05 15:03:26,794 - State of plot called: Distribution-Of-Power, True
+2025-06-05 15:03:26,794 - Value of Settlement Period entry before update: [<tkinter.ttk.Entry object .!entry>, 15.0]
+2025-06-05 15:03:26,794 - Value of Storage RTE entry before update: [<tkinter.ttk.Entry object .!entry2>, 0.7]
+2025-06-05 15:03:26,794 - Value of Green-Certificate Price entry before update: [<tkinter.ttk.Entry object .!entry3>, 0.0]
+2025-06-05 15:03:26,794 - Value of Power Unit CAPEX entry before update: [<tkinter.ttk.Entry object .!entry4>, 2158.3]
+2025-06-05 15:03:26,794 - Value of Capacity Unit CAPEX entry before update: [<tkinter.ttk.Entry object .!entry5>, 442.86]
+2025-06-05 15:03:26,794 - Value of Annual OPEX Rate entry before update: [<tkinter.ttk.Entry object .!entry6>, 0.02]
+2025-06-05 15:03:26,795 - Value of Project Life entry before update: [<tkinter.ttk.Entry object .!entry7>, 25.0]
+2025-06-05 15:03:26,795 - Value of Discount Rate entry before update: [<tkinter.ttk.Entry object .!entry8>, 0.0812]
+2025-06-05 15:03:26,795 - Value of Export Transmission Capacity entry before update: [<tkinter.ttk.Entry object .!entry9>, 0.0]
+2025-06-05 15:03:26,795 - Value of Scenario(s) (seperate with ',' or write 'All') entry before update: [<tkinter.ttk.Entry object .!entry10>, 'B7']
+2025-06-05 15:03:26,795 - Value of Timeseries Sheet Name entry before update: [<tkinter.ttk.Entry object .!entry11>, 'Timeseries_Input_2022']
+2025-06-05 15:03:26,795 - Value of Param Analysis Sheet Name entry before update: [<tkinter.ttk.Entry object .!entry12>, 'Parametric Analysis']
+2025-06-05 15:03:26,795 - Case type is 0 and method is 0
+2025-06-05 15:03:26,795 - Current values of entries: {'Settlement Period': [<tkinter.ttk.Entry object .!entry>, 15.0], 'Storage RTE': [<tkinter.ttk.Entry object .!entry2>, 0.7], 'Green-Certificate Price': [<tkinter.ttk.Entry object .!entry3>, 0.0], 'Power Unit CAPEX': [<tkinter.ttk.Entry object .!entry4>, 2158.3], 'Capacity Unit CAPEX': [<tkinter.ttk.Entry object .!entry5>, 442.86], 'Annual OPEX Rate': [<tkinter.ttk.Entry object .!entry6>, 0.02], 'Project Life': [<tkinter.ttk.Entry object .!entry7>, 25.0], 'Discount Rate': [<tkinter.ttk.Entry object .!entry8>, 0.0812], 'Export Transmission Capacity': [<tkinter.ttk.Entry object .!entry9>, 0.0], "Scenario(s) (seperate with ',' or write 'All')": [<tkinter.ttk.Entry object .!entry10>, 'B7'], 'Timeseries Sheet Name': [<tkinter.ttk.Entry object .!entry11>, 'Timeseries_Input_2022'], 'Param Analysis Sheet Name': [<tkinter.ttk.Entry object .!entry12>, 'Parametric Analysis']}
+2025-06-05 15:03:26,796 - Running on macOS...
+2025-06-05 15:03:26,796 - Triggering macOS Automation prompt...
+2025-06-05 15:03:26,977 - osascript result: 
+2025-06-05 15:03:28,978 - Using xlwings to recalculate Excel formulas...
+2025-06-05 15:03:32,528 - Recalculation complete: /Users/sashakistnassamy/Desktop/IMV Gamma - Bus Case.xlsx
+2025-06-05 15:03:40,572 - Entered plot for soc for scenario B7
+2025-06-05 15:03:40,572 - Total Throughput: 90809.31 MWh
+2025-06-05 15:03:40,572 - Equivalent Full Cycles: 227.02
+2025-06-05 15:03:40,616 - SOC plot displayed in popup for scenario B7.
+2025-06-05 15:03:40,681 - SOC plot saved for scenario B7.
+2025-06-05 15:03:40,681 - Entered plot of dop for scenario B7
+2025-06-05 15:03:40,830 - DOP plot displayed in popup for scenario B7.
+2025-06-05 15:03:40,936 - DOP plot saved for scenario B7.
+2025-06-05 15:03:40,936 - Progress: 100.0% done
+2025-06-05 15:04:29,099 - ==================================================
+2025-06-05 15:04:29,099 - NEW SESSION STARTED
+2025-06-05 15:04:29,099 - ==================================================
+2025-06-05 15:05:15,800 - Currently in execution of launch_button function
+2025-06-05 15:05:15,800 - State of plot called: State-Of-Charge, True
+2025-06-05 15:05:15,800 - State of plot called: Distribution-Of-Power, True
+2025-06-05 15:05:15,800 - Value of Settlement Period entry before update: [<tkinter.ttk.Entry object .!entry>]
+2025-06-05 15:05:15,800 - Value of Storage RTE entry before update: [<tkinter.ttk.Entry object .!entry2>]
+2025-06-05 15:05:15,800 - Value of Green-Certificate Price entry before update: [<tkinter.ttk.Entry object .!entry3>]
+2025-06-05 15:05:15,800 - Value of Power Unit CAPEX entry before update: [<tkinter.ttk.Entry object .!entry4>]
+2025-06-05 15:05:15,800 - Value of Capacity Unit CAPEX entry before update: [<tkinter.ttk.Entry object .!entry5>]
+2025-06-05 15:05:15,800 - Value of Annual OPEX Rate entry before update: [<tkinter.ttk.Entry object .!entry6>]
+2025-06-05 15:05:15,800 - Value of Project Life entry before update: [<tkinter.ttk.Entry object .!entry7>]
+2025-06-05 15:05:15,800 - Value of Discount Rate entry before update: [<tkinter.ttk.Entry object .!entry8>]
+2025-06-05 15:05:15,800 - Value of Export Transmission Capacity entry before update: [<tkinter.ttk.Entry object .!entry9>]
+2025-06-05 15:05:15,800 - Value of Scenario(s) (seperate with ',' or write 'All') entry before update: [<tkinter.ttk.Entry object .!entry10>]
+2025-06-05 15:05:15,801 - Value of Timeseries Sheet Name entry before update: [<tkinter.ttk.Entry object .!entry11>]
+2025-06-05 15:05:15,801 - Value of Param Analysis Sheet Name entry before update: [<tkinter.ttk.Entry object .!entry12>]
+2025-06-05 15:05:15,801 - Case type is 0 and method is 0
+2025-06-05 15:05:15,801 - Current values of entries: {'Settlement Period': [<tkinter.ttk.Entry object .!entry>, 15.0], 'Storage RTE': [<tkinter.ttk.Entry object .!entry2>, 0.7], 'Green-Certificate Price': [<tkinter.ttk.Entry object .!entry3>, 0.0], 'Power Unit CAPEX': [<tkinter.ttk.Entry object .!entry4>, 2158.3], 'Capacity Unit CAPEX': [<tkinter.ttk.Entry object .!entry5>, 442.86], 'Annual OPEX Rate': [<tkinter.ttk.Entry object .!entry6>, 0.02], 'Project Life': [<tkinter.ttk.Entry object .!entry7>, 25.0], 'Discount Rate': [<tkinter.ttk.Entry object .!entry8>, 0.0812], 'Export Transmission Capacity': [<tkinter.ttk.Entry object .!entry9>, 0.0], "Scenario(s) (seperate with ',' or write 'All')": [<tkinter.ttk.Entry object .!entry10>, 'B7'], 'Timeseries Sheet Name': [<tkinter.ttk.Entry object .!entry11>, 'Timeseries_Input_2022'], 'Param Analysis Sheet Name': [<tkinter.ttk.Entry object .!entry12>, 'Parametric Analysis']}
+2025-06-05 15:05:15,802 - Running on macOS...
+2025-06-05 15:05:15,802 - Triggering macOS Automation prompt...
+2025-06-05 15:05:15,987 - osascript result: 
+2025-06-05 15:05:17,991 - Using xlwings to recalculate Excel formulas...
+2025-06-05 15:05:21,401 - Recalculation complete: /Users/sashakistnassamy/Desktop/IMV Gamma - Bus Case.xlsx
+2025-06-05 15:05:28,202 - Entered plot for soc for scenario B7
+2025-06-05 15:05:28,202 - Total Throughput: 90809.31 MWh
+2025-06-05 15:05:28,202 - Equivalent Full Cycles: 227.02
+2025-06-05 15:05:28,248 - SOC plot displayed in popup for scenario B7.
+2025-06-05 15:05:28,333 - SOC plot saved for scenario B7.
+2025-06-05 15:05:28,333 - Entered plot of dop for scenario B7
+2025-06-05 15:05:28,481 - DOP plot displayed in popup for scenario B7.
+2025-06-05 15:05:28,597 - DOP plot saved for scenario B7.
+2025-06-05 15:05:28,597 - Progress: 100.0% done
+2025-06-05 15:05:28,611 - Simulations Complete! 
+ 
+2025-06-05 15:05:28,630 - Data copied to clipboard!
+
+2025-06-05 15:05:28,663 - ✓ Basic file read successful
+2025-06-05 15:05:28,686 - ✓ Pandas read successful
+2025-06-05 15:05:28,686 - 
+Writing to /Users/sashakistnassamy/Desktop/IMV Gamma - Bus Case.xlsx on sheet called line.
+ 
+2025-06-05 15:05:42,144 - Styling... 
+ 
+2025-06-05 15:05:55,091 - Done styling.
+2025-06-05 15:05:55,109 - Formatting columns: 
+ 
+2025-06-05 15:06:02,117 - 	 Doing: ppa price.
+2025-06-05 15:06:02,117 - 	 Doing: wind power (mw).
+2025-06-05 15:06:02,118 - 	 Doing: balancing market participation.
+2025-06-05 15:06:02,118 - 	 Doing: storage power rating.
+2025-06-05 15:06:02,118 - 	 Doing: duration.
+2025-06-05 15:06:02,120 - 	 Doing: irr.
+2025-06-05 15:06:02,120 - 	 Doing: npv.
+2025-06-05 15:06:02,120 - Done Formatting!
+2025-06-05 15:06:08,383 - Program execution complete!

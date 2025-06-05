@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python3.13
 """
 Build script for creating executable from pyproject.toml configuration
 """
@@ -39,7 +39,7 @@ def build_executable():
         sys.exit(1)
     
     # Build PyInstaller command
-    cmd = ["pyinstaller"]
+    cmd =[sys.executable, "-m", "PyInstaller"] 
     
     # Basic options
     script = config.get("script", "main.py")

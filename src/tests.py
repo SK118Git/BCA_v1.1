@@ -2,7 +2,8 @@
 # tests.py - File used for testing, serves as a firect entry point into the BA functions 
 # ==============================================================================================
 # Internal imports:
-from bca import run 
+from bca import run
+from popup import Progress_Popup 
 # ==============================================================================================
 
 """
@@ -57,8 +58,9 @@ clean_selected_plots = {
 case_type = 0
 file_name = "/Users/sashakistnassamy/Desktop/IMV Gamma - Bus Case.xlsx"
 method = 0 
+dummy_popup = Progress_Popup()
 
-run(file_name, "testing2", True, True, case_type, method, inputs_2, clean_selected_plots)
+run(file_name, "testing2", True, True, case_type, method, inputs_2, clean_selected_plots, dummy_popup)
 
 # ==============================================================================================
 # Test for BV 
@@ -96,7 +98,8 @@ case_type = 0
 file_name = "/Users/sashakistnassamy/Desktop/Borssele V - Bus Case.xlsx"
 method = 1 
 
-run(file_name, "testing2", True, True, case_type, method, inputs_2, clean_selected_plots)
+dummy_popup = Progress_Popup()
+run(file_name, "testing2", True, True, case_type, method, inputs_2, clean_selected_plots,dummy_popup)
 
 # ==============================================================================================
 # Test for Parkwind
@@ -132,6 +135,11 @@ clean_selected_plots = {
 case_type = 1
 file_name = "/Users/sashakistnassamy/Desktop/Parkwind - Bus Case_2.xlsx"
 method = 2 
-run(file_name, "testing", True, True, case_type, method, inputs_2, clean_selected_plots)
+
+dummy_popup = Progress_Popup()
+run(file_name, "testing", True, True, case_type, method, inputs_2, clean_selected_plots, dummy_popup)
 
 # %%
+
+
+

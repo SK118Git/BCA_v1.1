@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "FLASC_BCA"  
-version = "0.2.0"
+version = "0.3.0"
 description = "Python frontend for Flasc's Busienss Case Anlaysis Tool"
 authors = [
     {name = "Daniel", email = "palceholder@example.com"},  
@@ -12,7 +12,7 @@ authors = [
 ]
 readme = "README.md"
 license = {text = "MIT"}
-requires-python = ">=3.8"
+requires-python = ">=3.11"
 
 # Core dependencies (main functionality)
 dependencies = [
@@ -23,6 +23,7 @@ dependencies = [
     "matplotlib>=3.10.0,<4.0.0",
     "lxml>=5.4.0,<6.0.0",
     "numpy-financial>=1.0.0,<2.0.0",
+    "plotly>=6.1.0, <7.0.0",
 ]
 
 [project.optional-dependencies]
@@ -95,7 +96,7 @@ name = "BCA_Tool"
 onefile = true
 
 # Include icon (place icon.ico in your project root)
-icon = "icon.icns"
+icon = "icon.png"
 
 # Hidden imports (packages that PyInstaller might miss)
 hidden_imports = [
@@ -127,7 +128,7 @@ excludes = [
 ]
 
 # Additional options
-console = false          # Set to false for GUI apps (no console window)
+console = false # Set to false for GUI apps (no console window)
 debug = false          # Set to true for debugging build issues
 strip = false          # Set to true to reduce file size (Linux/Mac)
 upx = false           # Set to true to compress with UPX (if installed)

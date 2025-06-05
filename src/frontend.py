@@ -2,19 +2,22 @@
 # gui.py - File containg all functions that don't need to be modified, are not used for plotting, nor the GUI, not the BCA 
 # ============================================================================================================================
 # External library imports 
-from email import message
 import tkinter as tk
 from tkinter import ttk
 from tkinter import filedialog
 from tkinter import messagebox
 from typing import Any, cast
-import threading
+from threading import Thread 
+
 # =============================================================================
 # Internal library imports 
 from modifiable import AVAILABLE_PLOTS, INPUT_FIELDS, GUI_CONFIG, STRING_BASED, CHOICE_MATRIX
-from extra import update_dict, find_index
+from extra import update_dict, find_index, log_print
 from bca import run 
+from popup import Progress_Popup
 # =============================================================================
+
+
 
 class BCA_App:
     def __init__(self, root:tk.Tk) -> None:
@@ -95,7 +98,7 @@ class BCA_App:
             entries[key].append(self.create_entry(key,i+1))
             i+=1
         if self.debug_mode.get():
-            print(f"Currently in creation of entry dict the created dict is: {entries}")
+            log_print(f"Currently in creation of entry dict the created dict is: {entries}")
         return entries  
 
     def create_entry(self, name:str, position:int) -> ttk.Entry:
@@ -124,7 +127,7 @@ class BCA_App:
         Inputs: 
           self = this means that this function defines a method for the class \n
         Outputs: None \n
-        Note: Specificallty are created label and button for: \n
+        Note: Are created label and button for: 
             - choose file \n
             - case choice \n
             - method choice \n
@@ -142,8 +145,12 @@ class BCA_App:
 
         self.amount_widgets +=1 
 
+
+
         # Taking into account the addition of the entries 
         self.amount_widgets += len(self.entries)
+
+
 
         # Case Type Select
         case_choice_label = ttk.Label(self.root, text="Select the type of Case")
@@ -152,7 +159,6 @@ class BCA_App:
         case_type_combo['values'] = list(CHOICE_MATRIX.keys())
         case_type_combo.grid(column=2, row=self.amount_widgets, pady=20, padx=10, sticky='nsew')
         case_type_combo.bind("<<ComboboxSelected>>", self.update_method_combo)
-
         self.amount_widgets +=1 
 
         # Method Select 
@@ -161,9 +167,9 @@ class BCA_App:
         self.method_combo = ttk.Combobox(self.root, textvariable=self.method_choice, state="readonly")
         self.method_combo.grid(column=2, row=self.amount_widgets, pady=20, padx=10, sticky='nsew')
 
-
-
         self.amount_widgets +=1 
+
+
 
         # Options Button and Quit button 
         options_button = tk.Button(self.root, text='Options', command=self.open_options_menu)
@@ -173,6 +179,7 @@ class BCA_App:
         quit_button.grid(column=2, row=self.amount_widgets, pady=20, padx=10, sticky='nsew')
 
         self.amount_widgets +=1 
+
 
 
         # Launch button 
@@ -206,14 +213,15 @@ class BCA_App:
         Outputs: None 
         """
 
+        log_print("Currently in execution of launch_button function")
+
         debug_status: bool = self.debug_mode.get()
         if debug_status: 
-            print("Currently in execution of launch_button function")
             for plot in AVAILABLE_PLOTS:
                 try:
-                    print(f"State of plot called: {plot}, {self.selected_plots[plot].get()}")
+                    log_print(f"State of plot called: {plot}, {self.selected_plots[plot].get()}")
                 except Exception:
-                    print(f"An error occured for {plot}, program will keep executing but beware potential undefined behaviour ahead")
+                    log_print(f"An error occured for {plot}, program will keep executing but beware potential undefined behaviour ahead")
         try:
             self.update_widgets(self.entries)
         except ValueError:
@@ -228,7 +236,7 @@ class BCA_App:
             return 
 
         if debug_status:
-            print(f"Current values of entries: {self.entries}")
+            log_print(f"Current values of entries: {self.entries}")
 
         clean_input_values: dict[str, Any] =  {key: value[1] for key, value in self.entries.items()} # Actual type of values[1] is str|float 
       
@@ -244,17 +252,15 @@ class BCA_App:
         popup = tk.Toplevel(self.root)
         popup.title("Progress")
         popup.geometry("350x100")
-        popup.resizable(False, False)
+        popup.resizable(True, True)
 
         # Label (optional)
-        progress_label = tk.Label(popup, text="Running simulation...")
-        progress_label.pack(pady=(10, 5))
-
-        # Progress bar
-        progress = ttk.Progressbar(popup, orient='horizontal', length=300, mode='determinate')
-        progress.pack(pady=(0, 10))
-
-        thread = threading.Thread(target=self.no_error_run, args=(
+        my_progress_pp = Progress_Popup(tk.Label(popup, text="Running simulation..."), ttk.Progressbar(popup, orient='horizontal', length=300, mode='determinate'))
+        my_progress_pp.label.pack(pady=(10,5))# type: ignore
+        my_progress_pp.bar.pack(pady=(0,10))# type: ignore
+        
+        
+        thread = Thread(target=self.no_error_run, args=(
             self.selected_file,
             self.excel_output_sheet_name, 
             debug_status,
@@ -263,27 +269,24 @@ class BCA_App:
             self.method,
             clean_input_values,
             clean_selected_plots,
-            progress,
-            progress_label
+            my_progress_pp
         ))
         thread.start()
-        #run(self.selected_file, clean_input_values,clean_selected_plots, self.case_type, self.method, clean_paste_to_excel,self.excel_output_sheet_name, debug_status, progress)
-
         
         return
 
-    def no_error_run(self, selected_file:str,  excel_output_sheet_name:str, debug_status:bool, paste_to_excel:bool, case_type:int, method:int, input_values:dict[str, Any], selected_plots:dict[str, Any], progress:ttk.Progressbar, progress_label:tk.Label):
+    def no_error_run(self, selected_file:str,  excel_output_sheet_name:str, debug_status:bool, paste_to_excel:bool, case_type:int, method:int, input_values:dict[str, Any], selected_plots:dict[str, Any], progress_pp:Progress_Popup):
         try:
-           run(selected_file, excel_output_sheet_name, debug_status, paste_to_excel, case_type, method, input_values, selected_plots,    progress, progress_label)
+           run(selected_file, excel_output_sheet_name, debug_status, paste_to_excel, case_type, method, input_values, selected_plots, progress_pp)
         except AttributeError:
-            progress.stop()
-            progress_label.config(text="Error: You didn't select a file")
+            progress_pp.bar.stop() # type: ignore
+            progress_pp.label.config(text="Error: You didn't select a file") # type: ignore
         except ValueError as e:
-            progress.stop()
-            progress_label.config(text="Error: " + str(e))
+            progress_pp.bar.stop()# type: ignore
+            progress_pp.label.config(text="Error: " + str(e))# type: ignore
         except Exception as e:
-            progress.stop()
-            progress_label.config(text="Error: " + str(e))
+            progress_pp.bar.stop()# type: ignore
+            progress_pp.label.config(text="Error: " + str(e))# type: ignore
         return 
     
      
@@ -316,7 +319,7 @@ class BCA_App:
 
         for key in entries:
             if self.debug_mode.get():
-                print(key, entries[key])
+                log_print(f"Value of {key} entry before update: {entries[key]}")
             if key in STRING_BASED:
                 if key == "Scenario(s) (seperate with ',' or write 'All')":
                     if isinstance(entries[key][0], ttk.Entry): 
@@ -338,7 +341,7 @@ class BCA_App:
                     raise TypeError(f"Warning, Unexpected behavior occured: first value of self.entries isn't an Entry, it currently is {type(entries[key][0])}")
         
 
-        if self.debug_mode.get(): print(f"Case type is {self.case_type} and method is {self.method}")
+        if self.debug_mode.get(): log_print(f"Case type is {self.case_type} and method is {self.method}")
         return 
     
 
@@ -468,3 +471,7 @@ class BCA_App:
 
 
         return 
+
+
+
+    

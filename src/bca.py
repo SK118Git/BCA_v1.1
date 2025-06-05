@@ -12,13 +12,14 @@ from tkinter import Label
 from tkinter.ttk import Progressbar 
 # ============================================================================================================================
 # Internal Imports 
-from extra import find_scenario_index, safe_irr, coerce_byte
-from excel import read_pdf, read_df,save_to_excel, force_excel_calc
+from extra import find_scenario_index, safe_irr, coerce_byte, log_print
+from excel import force_excel_calc, read_pdf, read_df, save_to_excel
+from popup import Progress_Popup
 from modifiable import calculate_ap, calculate_atc
 # ============================================================================================================================
 
 # This is the entry point into the BCA 
-def run(file_name:str, output_sheet_name:str, debug_mode:bool, paste_to_excel:bool, case_type:int, method:int, input_values:dict[str, Any], chosen_plots:dict[str, Any],  progress_bar:Optional[Progressbar]=None, progress_label:Optional[Label]=None):
+def run(file_name:str, output_sheet_name:str, debug_mode:bool, paste_to_excel:bool, case_type:int, method:int, input_values:dict[str, Any], chosen_plots:dict[str, Any],  progress_pp:Progress_Popup):
     """
     Function purpose: this function serves as the entry point into the BC logic \n 
     Inputs: \n
@@ -50,7 +51,7 @@ def run(file_name:str, output_sheet_name:str, debug_mode:bool, paste_to_excel:bo
     try:
         df['Available Power [MW]'] = calculate_ap(df, method)
     except Exception:
-        if debug_mode: print("Didn't calculate ap")
+        if debug_mode: log_print("Didn't calculate ap")
         pass 
 
     df['Available Transmission Capacity [MW]'] = calculate_atc(df, method, input_values)
@@ -82,42 +83,45 @@ def run(file_name:str, output_sheet_name:str, debug_mode:bool, paste_to_excel:bo
         if not(no_plotting):
             for key in chosen_plots:
                 if chosen_plots[key][0]:
-                    chosen_plots[key][1](df, debug_mode, power_level)
+                    chosen_plots[key][1](df, individual_scenario, debug_mode, power_level)
         percent: float = (progress_counter/len(scenario_list)) * 100
-        if debug_mode: print(f"Progress: {percent}% done")
-        if progress_bar:
-            progress_bar['value'] = percent
-            progress_bar.update_idletasks()
+        log_print(f"Progress: {percent}% done")
+        #if progress_bar:
+        #    progress_bar['value'] = percent
+        #    progress_bar.update_idletasks()
+        progress_pp.update_vals("Computing Simulation", percent)
         
-    if debug_mode: print("\nSimulations Complete! \n ")
+    log_print("Simulations Complete! \n ")
 
     selected_data: pd.DataFrame = result.iloc[:, 7:] # type: ignore
 
     # Copy to clipboard without the index
     selected_data.to_clipboard(index=False, header=False)
 
-    if debug_mode: print("Data copied to clipboard!\n")
-    if progress_bar and progress_label:
-            # Reset progress
-            progress_bar['value'] = 0
-            progress_bar.update_idletasks()
-
-            # Change label text
-            progress_label.config(text="Data Copied to Clipboard")
-            progress_label.update_idletasks()
-    if not(debug_mode): sleep(0.5)
+    log_print("Data copied to clipboard!\n")
+    progress_pp.update_vals("Data Copied to Clipboard", 0)
+    #if progress_bar and progress_label:
+    #        # Reset progress
+    #        progress_bar['value'] = 0
+    #        progress_bar.update_idletasks()
+    #
+    #        # Change label text
+    #        progress_label.config(text="Data Copied to Clipboard")
+    #        progress_label.update_idletasks()
     if paste_to_excel: 
-        if progress_bar and progress_label:
-            # Reset progress
-            progress_bar['value'] = 0
-            progress_bar.update_idletasks()
+        progress_pp.update_vals('Beginning save to excel', 0)
+        #if progress_bar and progress_label:
+        #    # Reset progress
+        #    progress_bar['value'] = 0
+        #    progress_bar.update_idletasks()
 
-            # Change label text
-            progress_label.config(text="Beginning save to excel")
-            progress_label.update_idletasks()
+        #    # Change label text
+        #    progress_label.config(text="Beginning save to excel")
+        #    progress_label.update_idletasks()
 
-        save_to_excel(file_name, output_sheet_name, debug_mode, param_df,  progress_bar, progress_label)
-   
+        save_to_excel(file_name, output_sheet_name, debug_mode, param_df, progress_pp)
+    
+    log_print("Program execution complete!")
     return 
 
 #_______________________________________________________________________________________________________________________________________________________________________________
@@ -146,7 +150,7 @@ def launch_analysis(df:pd.DataFrame, param_df:pd.DataFrame, input_values:dict[st
         price_type = param_df.loc[scenario_index, 'Market Type']
         price_type = coerce_byte(price_type, [str])
     except Exception:
-        if debug_mode: print(f"An error has occured with price_type assignment: {Exception}")
+        log_print(f"An error has occured with price_type assignment: {Exception}")
         price_type = ""
 
     power_level = param_df.loc[scenario_index, 'Storage Power Rating']
