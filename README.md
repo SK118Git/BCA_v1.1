@@ -121,7 +121,7 @@ Below you will find a list of all columns that are needed/can be put (I will ano
 Check the [requirements.txt](requirements.txt) file for information on the packages needed to run the code
 This code was last tested for Python **v3.13.4** and requires a version above **v3.10**
 
-To launch the app through python, simply run the [main.py](main.py) file.
+To launch the app through python, simply run the [main.py](src/main.py) file.
 
 Make sure to consult the **Options** menu if you want to enable plots, or have the file be directly saved to a formatted excel sheet of your chosing 
 
@@ -164,14 +164,14 @@ The executable should appear in the **dist/** folder
 
 | File Name |  Purpose | 
 | -------------- | ----------------------------------------------------- |
-| [bca.py](bca.py) | The core functionality related to the BC, the code was refactored to conserve Daniel's methodology, no changes should be needed.|
-| [excel.py](excel.py) | Contains all functionality which directly interacts and modifies the excel file. |
-| [extra.py](extra.py)  | A collection of useful functions (Feel free to add functions here if needed).              | 
-| [frontend.py](frontend.py)    |  The core functionality related to the user interface  (There shoud be no need to modify this). |
-| [modifiable.py](modifiable.py) | This is the file that stores everything that can be (almost) freely modified to suit the BC. This entire code base is built around allowing BCs to be freely done by simply entering the relevant inputs in the GUI, or modifying this file if necessary. In particular, the core difference between the three prior BCs (and potentially all BCs) is the method of calculating **Available Power** (*ap*) and the **Available Transmission Capacity** (*atc*). |
-| [plots.py](plots.py) | The functions defining the different plots offered to the user. Make sure for every plot defined in here, it is noted in **AVAILABLE_PLOTS** in the tomodify file with name and a reference to the function (see prior examples). | 
-| [popup.py](popup.py) | A file which contains the code for the progress bar which appears as a popup. It was put into its own file because otherwise I ran into import loops.  | 
-| [tests.py](tests.py) | This file allows for testing the functionality defined for the BCA without having to go through the GUI by simply modifying the relevant entries. | 
+| [bca.py](src/bca.py) | The core functionality related to the BC, the code was refactored to conserve Daniel's methodology, no changes should be needed.|
+| [excel.py](src/excel.py) | Contains all functionality which directly interacts and modifies the excel file. |
+| [extra.py](src/extra.py)  | A collection of useful functions (Feel free to add functions here if needed).              | 
+| [frontend.py](src/frontend.py)    |  The core functionality related to the user interface  (There shoud be no need to modify this). |
+| [modifiable.py](src/modifiable.py) | This is the file that stores everything that can be (almost) freely modified to suit the BC. This entire code base is built around allowing BCs to be freely done by simply entering the relevant inputs in the GUI, or modifying this file if necessary. In particular, the core difference between the three prior BCs (and potentially all BCs) is the method of calculating **Available Power** (*ap*) and the **Available Transmission Capacity** (*atc*). |
+| [plots.py](src/plots.py) | The functions defining the different plots offered to the user. Make sure for every plot defined in here, it is noted in **AVAILABLE_PLOTS** in the tomodify file with name and a reference to the function (see prior examples). | 
+| [popup.py](src/popup.py) | A file which contains the code for the progress bar which appears as a popup. It was put into its own file because otherwise I ran into import loops.  | 
+| [tests.py](src/tests.py) | This file allows for testing the functionality defined for the BCA without having to go through the GUI by simply modifying the relevant entries. | 
 
 ## B. The Business Case Logic:
 
@@ -179,7 +179,7 @@ See the [relevant file](BCA_EXPLANATION.md)
 
 # IV. Modifying the code to suit the BC:
 
-As was stated above, please try as much as possible to limit changes to the [modifiable.py](modifiable.py).  
+As was stated above, please try as much as possible to limit changes to the [modifiable.py](src/modifiable.py). 
 
 You can freely:
 + Modify the GUI configuration settings
