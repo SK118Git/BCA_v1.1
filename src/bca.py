@@ -5,11 +5,7 @@
 import pandas as pd
 import numpy as np
 import numpy_financial as npf
-
-from time import sleep 
-from typing import Any, Optional
-from tkinter import Label 
-from tkinter.ttk import Progressbar 
+from typing import Any
 # ============================================================================================================================
 # Internal Imports 
 from extra import find_scenario_index, safe_irr, coerce_byte, log_print
@@ -22,19 +18,18 @@ from modifiable import calculate_ap, calculate_atc
 def run(file_name:str, output_sheet_name:str, debug_mode:bool, paste_to_excel:bool, case_type:int, method:int, input_values:dict[str, Any], chosen_plots:dict[str, Any],  progress_pp:Progress_Popup):
     """
     Function purpose: this function serves as the entry point into the BC logic \n 
-    Inputs: \n
-        file_name = the name of the excel file studied \n
-        output_sheet_name = the sheet the result should be saved to if paste_to_excel is True \n
-        debug_mode = enables additional print statements for debugging and backtracing \n
-        paste_to_excel = determines whether or not the final result needs to be saved directly to excel, if False will just copy to clipboard \n
-        case_type = the type of case being studied \n
-        method = the type of method being used to calculate the available pwoer and transmission capacity \n
-        input_values = a dictionnary where all the user inputed values (through the GUI) are, can also be defined manually like in tests.py = (key:string|float) \n
-        chosen_plots = a dictionnary where the information is stored about which polots the user chose to do =  (key:boolean) \n
-        progres_bar = the progress bar, set to optional for compatibility with tests \n
-        progress_label = the label that appears above the progress bar, set to optional for compatibility with tests \n
-    Outputs: None \n
     Note: The BCA logic was split into these subfunctions to allow for modularity and the multitude of methods/cases
+
+    Args: 
+        file_name: the name of the excel file studied 
+        output_sheet_name: the sheet the result should be saved to if paste_to_excel is True 
+        debug_mode: enables additional print statements for debugging and backtracing 
+        paste_to_excel: determines whether or not the final result needs to be saved directly to excel, if False will just copy to clipboard 
+        case_type: the type of case being studied 
+        method: the type of method being used to calculate the available pwoer and transmission capacity 
+        input_values: a dictionnary where all the user inputed values (through the GUI) are, can also be defined manually like in tests.py: (key:string|float) 
+        chosen_plots: a dictionnary where the information is stored about which polots the user chose to do:  (key:boolean) 
+        progress_pp: the progress bar and the label that appears above the progress bar, set to optional for compatibility with tests 
     """
     force_excel_calc(file_name)
 
@@ -86,9 +81,7 @@ def run(file_name:str, output_sheet_name:str, debug_mode:bool, paste_to_excel:bo
                     chosen_plots[key][1](df, individual_scenario, debug_mode, power_level)
         percent: float = (progress_counter/len(scenario_list)) * 100
         log_print(f"Progress: {percent}% done")
-        #if progress_bar:
-        #    progress_bar['value'] = percent
-        #    progress_bar.update_idletasks()
+        
         progress_pp.update_vals("Computing Simulation", percent)
         
     log_print("Simulations Complete! \n ")
@@ -100,25 +93,10 @@ def run(file_name:str, output_sheet_name:str, debug_mode:bool, paste_to_excel:bo
 
     log_print("Data copied to clipboard!\n")
     progress_pp.update_vals("Data Copied to Clipboard", 0)
-    #if progress_bar and progress_label:
-    #        # Reset progress
-    #        progress_bar['value'] = 0
-    #        progress_bar.update_idletasks()
-    #
-    #        # Change label text
-    #        progress_label.config(text="Data Copied to Clipboard")
-    #        progress_label.update_idletasks()
+   
     if paste_to_excel: 
         progress_pp.update_vals('Beginning save to excel', 0)
-        #if progress_bar and progress_label:
-        #    # Reset progress
-        #    progress_bar['value'] = 0
-        #    progress_bar.update_idletasks()
-
-        #    # Change label text
-        #    progress_label.config(text="Beginning save to excel")
-        #    progress_label.update_idletasks()
-
+       
         save_to_excel(file_name, output_sheet_name, debug_mode, param_df, progress_pp)
     
     log_print("Program execution complete!")
@@ -128,17 +106,17 @@ def run(file_name:str, output_sheet_name:str, debug_mode:bool, paste_to_excel:bo
 
 def launch_analysis(df:pd.DataFrame, param_df:pd.DataFrame, input_values:dict[str,Any],  years_covered:float, case_type:int, method:int,  scenario_index:int, debug_mode:bool) -> tuple[pd.DataFrame, float]:
     """
-    Function purpose: Launches a BC Analysis for a single scenario \n
-    Inputs: \n
-        df = the dataframe holding the timeseries values \n
-        param_df = the dataframe holding the values of the parameters for each scenario  \n
-        input_values = a dictionnary where all the user inputed values (through the GUI) are, can also be defined manually like in tests.py = (key:string|float) \n
-        years_covered = the amount of time the timeseries values oversee (defined in the run() function) \n
-        case_type = the type of case being studied \n
-        method = the method being sued to calculate the available power and available transmission capacity \n
-        scenario_index = the row number of the scenario \n
-        debug_mode = enables additional print statements for debugging and backtracing \n
-    Outputs: a tuple containing the result of the analysis and the power level defined here (which is needed for the plots afterwards) \n
+    Function purpose: Launches a BC Analysis for a single scenario \n 
+    Outputs: a tuple containing the result of the analysis and the power level defined here (which is needed for the plots afterwards) 
+    Args: 
+        df: the dataframe holding the timeseries values 
+        param_df: the dataframe holding the values of the parameters for each scenario  
+        input_values: a dictionnary where all the user inputed values (through the GUI) are, can also be defined manually like in tests.py: (key:string|float) 
+        years_covered: the amount of time the timeseries values oversee (defined in the run() function) 
+        case_type: the type of case being studied 
+        method: the method being sued to calculate the available power and available transmission capacity 
+        scenario_index: the row number of the scenario 
+        debug_mode: enables additional print statements for debugging and backtracing 
     """
     ppa_price = param_df.loc[scenario_index, 'PPA Price']
     ppa_price =  coerce_byte(ppa_price, [int, float])
@@ -184,20 +162,20 @@ def launch_analysis(df:pd.DataFrame, param_df:pd.DataFrame, input_values:dict[st
 
 def run_bus_case(df:pd.DataFrame, input_values:dict[str, Any], ppa_price:float|int, balancing_percentage:float, price_type:str, power_level:float|int, storage_time_hr:float|int, years_covered:float, case_type:int, solar_MWp:float|int=0) :
     """
-    Function purpose: This function is the one that actually computes the BC given the user defined inputs and the scenario parameters \n
-    Inputs:
-        df = the timeseries dataframe \n
-        input_values = the user defined inputs \n
-        ppa_price = Power Purchase Agreement Price \n
-        balancing_percentage = percentage of energy allocated to the balancing market \n
-        price_type = either IMB or INTRA \n
-        power_level = Storage power rating for a given scenario \n 
-        storage_time_hr = time energy spends in storage \n
-        years_covered = total amount of years covered \n
-        case_type = the type of case being studied \n
-        solar_MWp = energy generated by solar panels? (only used if the case is based on either mixed or only solar panel usage) \n
-    Outputs: a dataframe/list (?) called results which contains the result of the BC \n
+    Function purpose: This function is the one that actually computes the BC given the user defined inputs and the scenario parameters 
+    Outputs: a dataframe/list (?) called results which contains the result of the BC 
     Note: I tried touching this code as little as possible  
+    Args:
+        df: the timeseries dataframe 
+        input_values: the user defined inputs 
+        ppa_price: Power Purchase Agreement Price 
+        balancing_percentage: percentage of energy allocated to the balancing market 
+        price_type: either IMB or INTRA 
+        power_level: Storage power rating for a given scenario  
+        storage_time_hr: time energy spends in storage 
+        years_covered: total amount of years covered 
+        case_type: the type of case being studied 
+        solar_MWp: energy generated by solar panels? (only used if the case is based on either mixed or only solar panel usage) 
     """
     global cash_flows
 
@@ -419,7 +397,7 @@ def run_bus_case(df:pd.DataFrame, input_values:dict[str, Any], ppa_price:float|i
                 IRR,                                                                                                 # [P]: Internal Rate of Return of storage project
                 NPV                                                                                                  # [Q]  NPV of the storage project 
             ]    
-    except Exception:
+    except Exception: #Borssele V method
         result = [
                 # --- Energy Potential and Curtailment Breakdown ---
                 df['Available Power [MW]'].sum() * settlement_period / years_covered,            # [C]: Energy available assuming no transmission constraint (Type A only)

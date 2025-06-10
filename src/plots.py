@@ -4,7 +4,6 @@
 # External imports 
 import os
 import numpy as np 
-import matplotlib.pyplot as plt
 import tkinter as tk
 import plotly.graph_objects as go
 import plotly.io as pio

@@ -2,6 +2,7 @@
 # gui.py - File containg all functions that don't need to be modified, are not used for plotting, nor the GUI, not the BCA 
 # ============================================================================================================================
 # External library imports 
+from math import log
 import tkinter as tk
 from tkinter import ttk
 from tkinter import filedialog
@@ -23,11 +24,8 @@ class BCA_App:
     def __init__(self, root:tk.Tk) -> None:
         """
         Function purpose: Initializer of the class \n
-        Inputs: 
-          self = this means that this function defines a method for the class
-          root = the name of the root window for the GUI  
-        \n
-        Outputs: None 
+        Args: 
+          root: the name of the root window for the GUI  
         """
         self.initalize_vars(root)
         self.configure_window()
@@ -36,13 +34,12 @@ class BCA_App:
 
     def initalize_vars(self, root:tk.Tk) -> None:
         """
-        Function purpose: Initializes all the main variables of the class \n
-        Inputs: 
-          self = this means that this function defines a method for the class
-          root = the name of the root window for the GUI  
-        \n
-        Outputs: None \n 
-        Note: This method was created simply to clean-up the init 
+        Function purpose: 
+            Initializes all the main variables of the class 
+        Note: 
+            This method was created simply to clean-up the init 
+        Args: 
+          root: the name of the root window for the GUI  
         """
         self.root = root
         self.debug_mode = tk.BooleanVar(value=False) 
@@ -71,9 +68,6 @@ class BCA_App:
     def configure_window(self) -> None:
         """
         Function purpose: This function manages the settings for the GUI's window \n
-        Inputs: 
-          self = this means that this function defines a method for the class \n
-        Outputs: None 
         """
         self.root.title(str(GUI_CONFIG['window_title']))
         self.root.geometry(str(GUI_CONFIG['window_size']))
@@ -86,10 +80,10 @@ class BCA_App:
     # Creating all the entry widgets 
     def create_entry_widgets(self) -> dict[str, list[ttk.Entry | float | str]]:  
         """
-        Function purpose: Initializer of the class \n
-        Inputs: 
-          self = this means that this function defines a method for the class \n
-        Outputs: Creates the entries dictionnary which maps to each entry (defined in tomodify.py) the actual ttk.Entry
+        Function purpose: 
+            Initializer of the class 
+        Outputs: 
+            Creates the entries dictionnary which maps to each entry (defined in tomodify.py) the actual ttk.Entry
         """
         entries: dict[str, list[ttk.Entry | float | str]] = {field:[] for field in INPUT_FIELDS}
         i:int=0
@@ -102,15 +96,18 @@ class BCA_App:
         return entries  
 
     def create_entry(self, name:str, position:int) -> ttk.Entry:
-        """
-        Function purpose: This function manages the creation of each ttk.Entry \n
-        Inputs: 
-          self = this means that this function defines a method for the class
-          name = the name of the entry aka what is written in the label of the entry 
-          position = the row this entry should go on
-        \n
-        Outputs: An entry created using the prior info 
-        Note: This function was created as all entries have the same settings so it allows for less repetition in the code
+        """ 
+        Function purpose: 
+            This function manages the creation of each ttk.Entry 
+        Output: 
+            An entry created using the provided info
+        Note: 
+            This function was created as all entries have the same settings so it allows for less repetition in the code
+        
+        Args: 
+          name: the name of the entry aka what is written in the label of the entry 
+          position: the row this entry should go on 
+        
         """
         label = ttk.Label(self.root, text=name + ':')
         entry = ttk.Entry(self.root, validate="key", validatecommand=(self.isOkay, '%W', '%P'), invalidcommand=(self.correctInput, '%W'))
@@ -123,10 +120,8 @@ class BCA_App:
 
     def create_buttons(self) -> None:
         """
-        Function purpose: This function creates all the buttons and their respective labels \n
-        Inputs: 
-          self = this means that this function defines a method for the class \n
-        Outputs: None \n
+        Function purpose: 
+            This function creates all the buttons and their respective labels 
         Note: Are created label and button for: 
             - choose file \n
             - case choice \n
@@ -191,11 +186,6 @@ class BCA_App:
     def update_method_combo(self, event) -> None:
         """
         Function purpose: This function is relevant for allowing the choice of case type to affect the choice of method\n
-        Inputs: 
-          self = this means that this function defines a method for the class
-          event = ?
-        \n
-        Outputs: None 
         """
 
         # Get selected category
@@ -206,11 +196,8 @@ class BCA_App:
         self.method_choice.set('')  # Clear current selection
 
     def launch_button(self) -> None:
-        """
-        Function purpose: This function corresponds to the code executed when the Launch button is pressed  \n
-        Inputs: 
-          self = this means that this function defines a method for the class \n
-        Outputs: None 
+        """ 
+        Function purpose: This function corresponds to the code executed when the Launch button is pressed 
         """
 
         log_print("Currently in execution of launch_button function")
@@ -255,9 +242,11 @@ class BCA_App:
         popup.resizable(True, True)
 
         # Label (optional)
-        my_progress_pp = Progress_Popup(tk.Label(popup, text="Running simulation..."), ttk.Progressbar(popup, orient='horizontal', length=300, mode='determinate'))
-        my_progress_pp.label.pack(pady=(10,5))# type: ignore
-        my_progress_pp.bar.pack(pady=(0,10))# type: ignore
+        progress_pp = Progress_Popup(tk.Label(popup, text="Running simulation..."), ttk.Progressbar(popup, orient='horizontal', length=300, mode='determinate'))
+
+        assert(progress_pp.bar != None and progress_pp.label != None)
+        progress_pp.label.pack(pady=(10,5))
+        progress_pp.bar.pack(pady=(0,10))
         
         
         thread = Thread(target=self.no_error_run, args=(
@@ -269,37 +258,45 @@ class BCA_App:
             self.method,
             clean_input_values,
             clean_selected_plots,
-            my_progress_pp
+            progress_pp
         ))
         thread.start()
         
         return
 
     def no_error_run(self, selected_file:str,  excel_output_sheet_name:str, debug_status:bool, paste_to_excel:bool, case_type:int, method:int, input_values:dict[str, Any], selected_plots:dict[str, Any], progress_pp:Progress_Popup):
+        """
+        Function purpose: Function which catches final errors when trying to run
+        """
+        assert(progress_pp.bar != None and progress_pp.label != None)
+
         try:
            run(selected_file, excel_output_sheet_name, debug_status, paste_to_excel, case_type, method, input_values, selected_plots, progress_pp)
         except AttributeError:
-            progress_pp.bar.stop() # type: ignore
-            progress_pp.label.config(text="Error: You didn't select a file") # type: ignore
+            progress_pp.bar.stop() 
+            progress_pp.label.config(text="Error: You didn't select a file") 
         except ValueError as e:
-            progress_pp.bar.stop()# type: ignore
-            progress_pp.label.config(text="Error: " + str(e))# type: ignore
+            progress_pp.bar.stop()
+            progress_pp.label.config(text="Error (ValueError): " + str(e) + "\n Make sure you selected the right method and named the columns correctly.")
+            log_print(f"Warning (ValueError Raised): {str(e)} \n Make sure you selected the right method and named the columns correctly.")
         except Exception as e:
-            progress_pp.bar.stop()# type: ignore
-            progress_pp.label.config(text="Error: " + str(e))# type: ignore
+            progress_pp.bar.stop()
+            progress_pp.label.config(text="Error: " + str(e) + "\n Make sure you selected the right method and named the columns correctly.")
+            log_print(f"Warning: {str(e)} \n Make sure you selected the right method and named the columns correctly.")
         return 
     
      
     def update_widgets(self, entries:dict[str, list[ttk.Entry | float | str]]) -> None:
-        """
-        Function purpose:   This function adds the value of each entry to the dictionnary mapping 
-                            each entry name to its ttk.Entry and does the same for the dictionnary mapping each plot to the choice of the user \n
-        Inputs: 
-          self = this means that this function defines a method for the class
-          entries = current dictionnary mapping each entry name to its actual ttk.Entry 
-        \n
+        """ 
+        This function adds the value of each entry to the dictionnary mapping each entry name to its ttk.Entry 
+        and does the same for the dictionnary mapping each plot to the choice of the user 
+
         Outputs: None 
+        
+        Args: 
+          entries: current dictionnary mapping each entry name to its actual ttk.Entry 
         """
+
         i:int=0
         j:int=0
         for choice in CHOICE_MATRIX:
@@ -348,9 +345,6 @@ class BCA_App:
     def choose_file(self) -> None:
         """
         Function purpose: This function corresponds to the code executed when the chose file button is pressed and concatenated the file name if too long to display on the GUI  \n
-        Inputs: 
-          self = this means that this function defines a method for the class \n
-        Outputs: None 
         """
         file_path: str = filedialog.askopenfilename(title="Select a file")
         if file_path:
@@ -368,11 +362,11 @@ class BCA_App:
     def validate_input(self, who:str, what:str) -> bool:
         """
         Function purpose: This function is what verifies that user input is valid or not  \n
-        Inputs: 
-          self = this means that this function defines a method for the class \n
-          who = which entry called this function
-          what = the text that the user has just inputted 
         Outputs: Whether or not the user input is valid (as a Boolean)
+
+        Args: 
+          who: which entry called this function
+          what: the text that the user has just inputted \n 
         """
         isValid:bool = True 
         if what == '':
@@ -397,10 +391,8 @@ class BCA_App:
     def erase_input(self, who:str) -> None:
         """
         Function purpose: This function corresponds to the code executed when user input is considered invalid  \n
-        Inputs: 
-          self = this means that this function defines a method for the class \n
-          who = the entry which called this function
-        Outputs: None 
+        Args: 
+          who: the entry which called this function \n
         """
         if who in ['.!entry' + str(find_index(self.entries, element)+1) for element in STRING_BASED]:
             if who == '.!entry' + str(find_index(self.entries, "Scenario(s) (seperate with ',' or write 'All')")+1): 
@@ -414,10 +406,8 @@ class BCA_App:
     def open_options_menu(self) -> None:
         """
         Function purpose: This function corresponds to the code executed when the Options button is pressed  \n
-        Inputs: 
-          self = this means that this function defines a method for the class \n
-        Outputs: None 
         """
+
         # Create a new popup window
         popup = tk.Toplevel(self.root)
         popup.title("Options Menu")

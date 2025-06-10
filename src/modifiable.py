@@ -76,12 +76,13 @@ THIN_BORDER = Side(border_style="thin", color="000000")
 
 def calculate_ap(df:pd.DataFrame, method:int) -> pd.Series:
     """
-    Function purpose: Calculated the Available Power differently depending on the chosen method \n 
-    Inputs: \n
-        df = a pandas Dataframe containing the timeseries sheet's values \n
-        method = the chosen method \n
-    Outputs: the column containing the values of Available Transmission Capacity that was computed \n
-    Notes:
+    Function purpose: Calculated the Available Power differently depending on the chosen method 
+
+    Outputs: the column containing the values of Available Transmission Capacity that was computed 
+
+    Args:
+        df: a pandas Dataframe containing the timeseries sheet's values 
+        method: the chosen method 
     """
     if method == 1: #BV
         df['Available Power [MW]'] = df['Potential Generation [MW]'] - df['Generation Constraint [MW]']
@@ -120,13 +121,14 @@ def calculate_ap(df:pd.DataFrame, method:int) -> pd.Series:
 #__________________________________________________________________________________________________________________________________________
 def calculate_atc(df:pd.DataFrame, method:int, input_values:dict[str, float|str]) -> pd.Series:
     """
-    Function purpose: Calculated the Available Power differently depending on the chosen method \n 
-    Inputs: \n
-        df = a pandas Dataframe containing the timeseries sheet's values \n
-        method = the chosen method \n
-        input_values = a dictionnary containing all the values inputted by the user \n
-    Outputs: the column containing the values of Available Power that was computed \n
-    Notes:
+    Function purpose: Calculated the Available Power differently depending on the chosen method 
+
+    Outputs: the column containing the values of Available Power that was computed 
+
+    Args:
+        df: a pandas Dataframe containing the timeseries sheet's values 
+        method: the chosen method
+        input_values: a dictionnary containing all the values inputted by the user
     """
     # Replace with your actual project name
     if method==0: #imv-like
