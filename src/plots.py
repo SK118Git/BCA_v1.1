@@ -22,11 +22,10 @@ from extra import log_print
 def plot_soc(df:DataFrame, scenario_name:str, debug_mode:bool, *args) -> None:
     """
     Function Purpose: Show the SOC plot in a new popup window.
-    Inputs:
-        df = timeseries dataframe
-        scenario_name = the name of the current scenario
-        debug_mode = if True adds debug log statements
-    Outputs: None
+    Args:
+        df: timeseries dataframe
+        scenario_name: the name of the current scenario
+        debug_mode: if True adds debug log statements
     """
     log_print("Entered plot for soc for scenario {scenario_name}.")
 
@@ -78,11 +77,10 @@ def plot_soc(df:DataFrame, scenario_name:str, debug_mode:bool, *args) -> None:
 def plot_dop(df:DataFrame, scenario_name:str, debug_mode:bool, power_level:int|float, *args):
     """
     Function Purpose: Show the SOC plot in a new popup window.
-    Inputs:
-        df = timeseries dataframe
-        scenario_name = the name of the current scenario
-        debug_mode = if True adds debug log statements
-    Outputs: None
+    Args:
+        df: timeseries dataframe
+        scenario_name: the name of the current scenario
+        debug_mode: if True adds debug log statements
     """
 
     log_print(f"Entered plot of dop for scenario {scenario_name}")

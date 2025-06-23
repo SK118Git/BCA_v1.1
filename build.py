@@ -109,20 +109,20 @@ def build_executable():
     # Run PyInstaller
     try:
         result = subprocess.run(cmd, check=True)
-        print("\n✅ Build completed successfully!")
+        print("\nBuild completed successfully!")
         
         # Show output location
         dist_dir = Path("dist")
         if dist_dir.exists():
             executables = list(dist_dir.glob("*"))
             if executables:
-                print(f"📁 Executable created: {executables[0]}")
+                print(f"Executable created: {executables[0]}")
         
     except subprocess.CalledProcessError as e:
-        print(f"\n❌ Build failed with exit code {e.returncode}")
+        print(f"\nBuild failed with exit code {e.returncode}")
         sys.exit(1)
     except KeyboardInterrupt:
-        print("\n⏹️  Build interrupted by user")
+        print("\nBuild interrupted by user")
         sys.exit(1)
 
 def main():

@@ -1,7 +1,7 @@
 @echo off
 REM Windows build script for BCA 
 
-echo 🔨 Building BCA executable...
+echo Building BCA executable...
 echo.
 
 REM Check if Python is available
@@ -13,7 +13,7 @@ if %errorlevel% neq 0 (
 )
 
 REM Install build dependencies if needed
-echo 📦 Installing build dependencies...
+echo Installing build dependencies...
 pip install -e ".[build]" >nul 2>&1
 
 REM Run the build script
@@ -23,8 +23,8 @@ python build.py
 REM Check if build was successful
 if exist "dist\BCA_Tool.exe" (
     echo.
-    echo ✅ Build completed successfully!
-    echo 📁 Executable created: dist\BCA_Tool.exe
+    echo Build completed successfully!
+    echo Executable created: dist\BCA_Tool.exe
     echo.
     echo Would you like to test the executable? (y/n)
     set /p choice=
