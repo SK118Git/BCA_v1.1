@@ -23,8 +23,8 @@ dependencies = [
     "matplotlib>=3.10.0,<4.0.0",
     "lxml>=5.4.0,<6.0.0",
     "numpy-financial>=1.0.0,<2.0.0",
-    "plotly>=6.1.0, <7.0.0",
-    "applescript>=2021.2.0, < 2023.0.0"
+    "plotly>=6.1.0,<7.0.0",
+    "applescript>=2021.2.0,<2023.0.0; sys_platform == 'darwin'"
 ]
 
 [project.optional-dependencies]
@@ -76,7 +76,7 @@ Issues = "https://github.com/yourusername/your-repo/issues"  # Replace with your
 
 # Entry point for running the application
 [project.scripts]
-bca-tool = "src/main:main"  # Assumes main.py has a main() function
+bca-tool = "main:main"  # Assumes main.py has a main() function
 
 # Tool configurations
 [tool.setuptools.packages.find]
