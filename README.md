@@ -11,11 +11,14 @@
     - [Output 1 (All other methods):](#output-1-all-other-methods)
     - [Output 2 (Borselle V Method):](#output-2-borselle-v-method)
 - [II. Launching the app:](#ii-launching-the-app)
-  - [A. Through Python](#a-through-python)
-  - [B. Executable format](#b-executable-format)
-    - [On Windows:](#on-windows)
-    - [On Linux/Mac:](#on-linuxmac)
-    - [On All Platforms:](#on-all-platforms)
+  - [Via Python](#via-python)
+  - [Using the provided executables](#using-the-provided-executables)
+  - [Compiling it yourself](#compiling-it-yourself)
+    - [On Windows](#on-windows)
+    - [On MacOS/Linux](#on-macoslinux)
+    - [On any platform](#on-any-platform)
+      - [Using Python](#using-python)
+      - [Using Make](#using-make)
 - [III. Explaining the source code:](#iii-explaining-the-source-code)
   - [A. File Structure:](#a-file-structure)
   - [B. The Business Case Logic:](#b-the-business-case-logic)
@@ -116,47 +119,82 @@ Below you will find a list of all columns that are needed/can be put (I will ano
 
 # II. Launching the app:
 
-## A. Through Python
-
-Check the [requirements.txt](requirements.txt) file for information on the packages needed to run the code
-This code was last tested for Python **v3.13.4** and requires a version above **v3.10**
-
-To launch the app through python, simply run the [main.py](src/main.py) file.
-
-Make sure to consult the **Options** menu if you want to enable plots, or have the file be directly saved to a formatted excel sheet of your chosing 
+## Via Python
 
 
-## B. Executable format
+Check the [pyproject.toml](pyproject.toml) file for information on the packages needed to run the code. 
+The code's entry point is src/main.py so you simply need to run that file to get started (however you need to make sure you have installed all the relevant packages).
 
+You can also run manually:
 
-### On Windows:
-
-Run the **build.bat** file 
-The executable should appear in the **dist/** folder
-
-### On Linux/Mac:
-
-Run the following command in a terminal opened in this folder (or use **cd** to get to this folder):
-
-```bash 
-make build
+On windows (run these commands one by one):
+```bat
+py -m venv venv
+.\venv\Scripts\activate
+python -m pip install ".[dependencies,build]"
+python src/main.py 
 ```
 
-The executable should appear in the **dist/** folder
-
-
-### On All Platforms:
-
-Warning! 
-You must have **tomli** *or* **tomllib** *and* **pyinstaller** both installed.
-
-Run the following command in a terminal opened in this folder (or use **cd** to get to this folder):
-
-```python
-python build.py
+On MacOS/Linux (run these commands one by one):
+```sh
+python3.x -m venv venv #replace x with your version
+source venv/bin/activate
+python -m pip install ".[dependencies,build]"
+python src/main.py 
 ```
 
-The executable should appear in the **dist/** folder
+
+## Using the provided executables
+
+You can simply use the app by going to the **executables** folder and unzipping the relevant folder: win.zip if you are on windows, and unix.zip if you are on mac. In the newly unzipped folder you will find the packaged application ready to go!
+
+## Compiling it yourself
+
+This process is a bit more tedious as you may run into unforseen errors. However I did my best to manage as many of the errors as possible 
+
+### On Windows
+
+Simply launch the **prep.bat** file, either by double clicking it or by running it in the terminal.
+The compiled app wil appear in the dist folder.
+
+### On MacOS/Linux
+
+Simply launch the **prep.sh** file, either by double clicking it or by running it in the terminal
+The compiled app wil appear in the dist folder.
+
+### On any platform
+
+#### Using Python
+
+On windows (run these commands one by one):
+```bat
+py -m venv venv
+.\venv\Scripts\activate
+python -m pip install tomlib tomli # whichever works
+python -m pip install pyinstaller 
+python build.py 
+```
+
+On MacOS/Linux (run these commands one by one):
+```sh
+python3.x -m venv venv #replace x with your version
+source venv/bin/activate
+python -m pip install tomlib tomli # whichever works
+python -m pip install pyinstaller
+python build.py 
+```
+
+The compiled app wil appear in the dist folder.
+
+#### Using Make
+
+Run in the following order:
++ make venv
++ make install
++ make build
+
+The compiled app wil appear in the dist folder.
+
 
 # III. Explaining the source code: 
 

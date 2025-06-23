@@ -41,7 +41,7 @@ call venv\Scripts\activate
 
 REM Install build dependencies
 echo Installing build dependencies...
-python -m pip install .
+venv\Scripts\python.exe -m pip install ".[dependencies,build]"
 if %errorlevel% neq 0 (
     echo Dependency installation failed!
     pause
@@ -50,23 +50,7 @@ if %errorlevel% neq 0 (
 
 REM Build
 echo Starting build process...
-python build.py
-
-REM Check if build was successful
-if exist "dist\BCA_Tool.exe" (
-    echo.
-    echo Build completed successfully!
-    echo Executable created: dist\BCA_Tool.exe
-    echo.
-    set /p choice=Would you like to test the executable? (y/n): 
-    if /i "%choice%"=="y" (
-        echo Testing executable...
-        dist\BCA_Tool.exe
-    )
-) else (
-    echo.
-    echo Build failed! Check the output above for errors.
-)
+venv\Scripts\python.exe build.py
 
 echo.
 pause
