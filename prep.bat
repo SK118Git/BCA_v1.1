@@ -1,45 +1,48 @@
 @echo off
+setlocal
+
 REM Windows build script for BCA 
 
 echo Building BCA executable...
 echo.
 
-REM Check if Python is available
-py --version >nul 2>&1
-if %errorlevel% neq 0 (
-    echo Python not found! Please install Python 3.11 or higher.
+
+echo Fetching valid Python installation "(v >= 3.10)"
+for /f "delims=" %%P in ('call .\prep\find_py.bat') do set "python_bin=%%P"
+
+if "%python_bin%"=="1" (
+    echo NO valid python executable found
     pause
     exit /b 1
 )
 
-REM Check Python version >= 3.11
-for /f "tokens=2 delims= " %%v in ('py --version') do set PY_VER=%%v
-for /f "tokens=1,2 delims=." %%a in ("%PY_VER%") do (
-    set MAJOR=%%a
-    set MINOR=%%b
+if "%python_bin%"=="2" (
+    echo Only valid executable has major version "< 3"
+    pause
+    exit /b 1
 )
 
-if %MAJOR% LSS 3 (
-    echo Python 3.11 or higher is required!
+if "%python_bin%"=="3" (
+    echo Only valid executable has minor version "< 10"
     pause
     exit /b 1
 )
-if %MAJOR%==3 if %MINOR% LSS 11 (
-    echo Python 3.11 or higher is required!
-    pause
-    exit /b 1
-)
+
 
 REM Create venv if not exists
 if not exist "venv" (
     echo Creating virtual environment...
-    py -m venv venv
+    %python_bin% -m venv venv
 )
 
 REM Activate venv
 call venv\Scripts\activate
 
 REM Install build dependencies
+
+echo Purging cache
+%python_bin% -m pip cache purge 
+
 echo Installing build dependencies...
 venv\Scripts\python.exe -m pip install ".[dependencies,build]"
 if %errorlevel% neq 0 (
@@ -54,3 +57,4 @@ venv\Scripts\python.exe build.py
 
 echo.
 pause
+endlocal
