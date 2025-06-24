@@ -1,7 +1,12 @@
 !.gitignore
 .git/ 
 .venv/
+venv/
 dist/
 build/
-__pycache__/
 .DS_Store
+.vscode/
+src/FLASC_BCA.egg-info/
+executables/unix/
+executables/win/
+__pycache__/
