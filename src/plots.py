@@ -134,16 +134,25 @@ def plot_dop(df:DataFrame, scenario_name:str, debug_mode:bool, power_level:int|f
 
 def save_figure(fig:Figure, plot_type:str, scenario_name:str) -> None:
     # Create a directory in the user's Documents folder
-    documents_dir = os.path.join(os.path.expanduser("~"), "Documents")
-    output_dir = os.path.join(documents_dir, "BCA_Plots")  # Change name as needed
-    os.makedirs(output_dir, exist_ok=True)
-
+    downloads_dir = os.path.join(os.path.expanduser("~"), "Downloads")
+    log_print(f"Downloads directory resolved to be: {downloads_dir}")
+    output_dir = os.path.join(downloads_dir, "BCA_Plots")  # Change name as needed
+    log_print(f"Target output directory: {output_dir}")
+    try: 
+        os.makedirs(output_dir, exist_ok=True)
+        log_print(f"Directory created successfully: {os.path.exists(output_dir)}")
+    except Exception as e:
+        log_print(f"Error creating directory: {e}")
+        raise 
 
     # Format timestamp
     timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
 
+    import re 
+    safe_scenario_name = re.sub(r'[<>:"/\\|?*]', '_', scenario_name)
+
     # Construct full path
-    filename = f"{plot_type}_{scenario_name}_{timestamp}.png"
+    filename = f"{plot_type}_{safe_scenario_name}_{timestamp}.png"
     filepath = os.path.join(output_dir, filename)
 
     # Save figure

@@ -42,7 +42,7 @@ venv:  ## Create virtual environment if it doesn't exist
 	fi
 
 install: venv  ## Install package in development mode inside venv
-	$(VENV_PYTHON) -m pip install ".[dependencies, build]"
+	$(VENV_PYTHON) -m pip install ".[all, build]"
 
 install-dev: venv  ## Install with development dependencies
 	$(VENV_PYTHON) -m pip install -e . 

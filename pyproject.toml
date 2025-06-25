@@ -30,20 +30,12 @@ dependencies = [
 [project.optional-dependencies]
 # Development tools
 dev = [
-    "ipython>=9.2.0",
-    "jupyter>=1.0.0",
-    "ipykernel>=6.29.0",
     "matplotlib-inline>=0.1.0",
 ]
 
 # Full development environment (includes Jupyter and debugging)
 full-dev = [
-    "ipython>=9.2.0",
-    "jupyter>=1.0.0",
-    "ipykernel>=6.29.0",
-    "debugpy>=1.8.0",
     "matplotlib-inline>=0.1.0",
-    "ipython-pygments-lexers>=1.1.0",
 ]
 
 # Plotting and visualization extras
@@ -54,12 +46,7 @@ viz = [
 
 # All optional dependencies
 all = [
-    "ipython>=9.2.0",
-    "jupyter>=1.0.0",
-    "ipykernel>=6.29.0",
-    "debugpy>=1.8.0",
     "matplotlib-inline>=0.1.0",
-    "ipython-pygments-lexers>=1.1.0",
     "pillow>=11.2.0,<12.0.0",
 ]
 

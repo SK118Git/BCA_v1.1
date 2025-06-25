@@ -21,7 +21,7 @@ source venv/bin/activate
 
 # Install build dependencies
 echo "Installing build dependencies..."
-venv/bin/python -m pip install ".[dependencies,build]"
+venv/bin/python -m pip install ".[all,build]"
 
 echo "Starting build process..."
 venv/bin/python build.py

@@ -44,7 +44,7 @@ echo Purging cache
 %python_bin% -m pip cache purge 
 
 echo Installing build dependencies...
-venv\Scripts\python.exe -m pip install ".[dependencies,build]"
+venv\Scripts\python.exe -m pip install ".[all,build]"
 if %errorlevel% neq 0 (
     echo Dependency installation failed!
     pause
