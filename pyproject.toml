@@ -4,15 +4,15 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "FLASC_BCA"  
-version = "0.3.0"
+version = "0.4.0"
 description = "Python frontend for Flasc's Busienss Case Anlaysis Tool"
 authors = [
-    {name = "Daniel", email = "palceholder@example.com"},  
-    {name = "Sasha", email = "placeholder@example.com"}  
+    {name = "Daniel", email = "danial.buhagiar@flasc.eu"},  
+    {name = "Sasha", email = "sasha.kistnassamy@flasc.eu"}  
 ]
 readme = "README.md"
 license = {text = "MIT"}
-requires-python = ">=3.11"
+requires-python = ">=3.10"
 
 # Core dependencies (main functionality)
 dependencies = [

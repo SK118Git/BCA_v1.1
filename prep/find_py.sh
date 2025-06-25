@@ -1,9 +1,9 @@
 #!/bin/bash
 
 MIN_MAJOR=3
-MIN_MINOR=11
+MIN_MINOR=10
 
-for ver in 3.15 3.14 3.13 3.12 3.11; do
+for ver in 3.15 3.14 3.13 3.12 3.11 3.10 3 ""; do
     PYTHON_BIN=$(command -v python$ver 2>/dev/null)
     if [ -n "$PYTHON_BIN" ]; then
         # Get version info
