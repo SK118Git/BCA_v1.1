@@ -19,7 +19,7 @@ from extra import log_print
 
 
 
-def plot_soc(df:DataFrame, scenario_name:str, debug_mode:bool, *args) -> None:
+def plot_soc(df:DataFrame, scenario_name:str, debug_mode:bool, plotting:bool, *args) -> None:
     """
     Function Purpose: Show the SOC plot in a new popup window.
     Args:
@@ -45,10 +45,11 @@ def plot_soc(df:DataFrame, scenario_name:str, debug_mode:bool, *args) -> None:
     hist_values = (hist_values / total_points) * 100
     bin_labels = [f"[{int(bin_edges[i])}-{int(bin_edges[i+1])}]" for i in range(len(bin_edges)-1)]
 
-    # Create popup window
-    popup = tk.Toplevel()
-    popup.title(f"Scenario {scenario_name}: State of Charge (SOC) Distribution")
-    popup.geometry("1400x900")
+    if plotting:
+        # Create popup window
+        popup = tk.Toplevel()
+        popup.title(f"Scenario {scenario_name}: State of Charge (SOC) Distribution")
+        popup.geometry("1400x900")
 
     # Create Figure and Axes
     fig = Figure(figsize=(8, 6))
@@ -62,10 +63,11 @@ def plot_soc(df:DataFrame, scenario_name:str, debug_mode:bool, *args) -> None:
     ax.set_xticklabels([f"{int(x)}%" for x in np.arange(0, 110, 10)])
     ax.grid(axis="x", linestyle="--", alpha=0.7)
 
-    # Embed in popup
-    canvas = FigureCanvasTkAgg(fig, master=popup)
-    canvas.draw()
-    canvas.get_tk_widget().pack(fill='both', expand=True)
+    if plotting:
+        # Embed in popup
+        canvas = FigureCanvasTkAgg(fig, master=popup)
+        canvas.draw()
+        canvas.get_tk_widget().pack(fill='both', expand=True)
 
     log_print(f"SOC plot displayed in popup for scenario {scenario_name}.")
     save_figure(fig, "soc", scenario_name)
@@ -74,7 +76,7 @@ def plot_soc(df:DataFrame, scenario_name:str, debug_mode:bool, *args) -> None:
 
 
 #_____________________________________________________________________________________________________________________________
-def plot_dop(df:DataFrame, scenario_name:str, debug_mode:bool, power_level:int|float, *args):
+def plot_dop(df:DataFrame, scenario_name:str, debug_mode:bool, plotting:bool, power_level:int|float, *args):
     """
     Function Purpose: Show the SOC plot in a new popup window.
     Args:
@@ -95,10 +97,11 @@ def plot_dop(df:DataFrame, scenario_name:str, debug_mode:bool, power_level:int|f
     counts, bin_edges = np.histogram(power_series, bins=bins)
     percentages = counts / counts.sum() * 100
 
-    # Create a new popup Tkinter window
-    popup = tk.Toplevel()
-    popup.title(f"Scenario {scenario_name}: Distribution of Charging/Discharging Power")
-    popup.geometry("1400x900")
+    if plotting:
+        # Create a new popup Tkinter window
+        popup = tk.Toplevel()
+        popup.title(f"Scenario {scenario_name}: Distribution of Charging/Discharging Power")
+        popup.geometry("1400x900")
 
     # Create a Figure object
     fig = Figure(figsize=(10, 6), dpi=100)
@@ -120,10 +123,11 @@ def plot_dop(df:DataFrame, scenario_name:str, debug_mode:bool, power_level:int|f
 
     fig.tight_layout()
 
-    # Embed the figure in the Tkinter window
-    canvas = FigureCanvasTkAgg(fig, master=popup)
-    canvas.draw()
-    canvas.get_tk_widget().pack(fill=tk.BOTH, expand=True)
+    if plotting:
+        # Embed the figure in the Tkinter window
+        canvas = FigureCanvasTkAgg(fig, master=popup)
+        canvas.draw()
+        canvas.get_tk_widget().pack(fill=tk.BOTH, expand=True)
 
     log_print(f"DOP plot displayed in popup for scenario {scenario_name}.")
     save_figure(fig, "dop", scenario_name)

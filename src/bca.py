@@ -61,12 +61,12 @@ def run(file_name:str, output_sheet_name:str, debug_mode:bool, paste_to_excel:bo
     # Convert to years
     years_covered = days_covered / 365.25  # Using 365.25 to account for leap years
 
-    no_plotting = False 
+    plotting = True 
 
     scenario_list: pd.Series[Any] | list[str]
     if scenario.upper() == "ALL":
         scenario_list = param_df["Scenario"].dropna()
-        no_plotting = True 
+        plotting = False 
     else:
         scenario_list = [word.strip() for word in scenario.split(",")]
 
@@ -75,10 +75,9 @@ def run(file_name:str, output_sheet_name:str, debug_mode:bool, paste_to_excel:bo
         scenario_index = find_scenario_index(param_df, individual_scenario)
         (result, power_level) = launch_analysis(df, param_df, input_values,  years_covered, case_type, method, scenario_index, debug_mode)
         progress_counter +=1
-        if not(no_plotting):
-            for key in chosen_plots:
-                if chosen_plots[key][0]:
-                    chosen_plots[key][1](df, individual_scenario, debug_mode, power_level)
+        for key in chosen_plots:
+            if chosen_plots[key][0]:
+                chosen_plots[key][1](df, individual_scenario, debug_mode, plotting, power_level)
         percent: float = (progress_counter/len(scenario_list)) * 100
         log_print(f"Progress: {percent}% done")
         

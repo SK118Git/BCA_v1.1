@@ -8,6 +8,7 @@ from tkinter import filedialog
 from tkinter import messagebox
 from typing import Any, cast
 from threading import Thread 
+import pandas as pd
 
 # =============================================================================
 # Internal library imports 
@@ -58,6 +59,9 @@ class BCA_App:
 
         self.excel_output_sheet_name = tk.StringVar()
 
+
+        self.excel_param_input_sheet_name = tk.StringVar()
+
         self.isOkay = root.register(self.validate_input)
         self.correctInput= root.register(self.erase_input)
 
@@ -85,7 +89,7 @@ class BCA_App:
             Creates the entries dictionnary which maps to each entry (defined in tomodify.py) the actual ttk.Entry
         """
         entries: dict[str, list[ttk.Entry | float | str]] = {field:[] for field in INPUT_FIELDS}
-        i:int=0
+        i:int=1
 
         for key in entries:
             entries[key].append(self.create_entry(key,i+1))
@@ -139,7 +143,14 @@ class BCA_App:
 
         self.amount_widgets +=1 
 
+        self.load_vals_button = ttk.Button(self.root, text="Do you want to load the values from the sheet?", command=self.load_vals)
+        self.load_vals_button.grid(column=1, row=self.amount_widgets, padx=10, pady=20, sticky='nsew')
 
+        self.load_vals_label = ttk.Entry(self.root, validate="key", validatecommand=(self.isOkay, '%W', '%P'), invalidcommand=(self.correctInput, '%W'))
+        self.load_vals_label.grid(column=2, row=self.amount_widgets, padx=10, pady=20, sticky='nsew')
+
+        self.amount_widgets += 1
+        
 
         # Taking into account the addition of the entries 
         self.amount_widgets += len(self.entries)
@@ -367,10 +378,11 @@ class BCA_App:
           who: which entry called this function
           what: the text that the user has just inputted \n 
         """
+        log_print(f"Currently entry named: {who} is being validated")
         isValid:bool = True 
         if what == '':
             return True
-        if who in ['.!entry' + str(find_index(self.entries, element)+1) for element in STRING_BASED]:
+        if who in ['.!entry' + str(find_index(self.entries, element)+1) for element in STRING_BASED] or (who == ".!entry" + str(len(self.entries)+1)):
             try:
                 input = str(what)
                 if not(input[0].isdigit()) :
@@ -461,6 +473,26 @@ class BCA_App:
 
         return 
 
+    def load_vals(self) -> None: 
+        if self.load_vals_label.get() != "":
+            try:
+                vals = pd.read_excel(self.selected_file, sheet_name=self.load_vals_label.get(), index_col=0, header=None)
+                log_print(f"Values found in sheet names {self.load_vals_label.get()}: \n {vals}" )
+                for key in self.entries:
+                    if key not in STRING_BASED:
+                        log_print(f"Currently modifying value of {key} and replacing with {vals.loc[key].dropna().iloc[0]}")
+                        self.entries[key][0].delete(0, 'end')
+                        self.entries[key][0].insert(0, vals.loc[key].dropna().iloc[0])
+            except ValueError:
+                log_print("Error, no worksheet with that name found")
+                messagebox.showwarning("Error", "No worksheet with that name was found")
+            except KeyError as e:
+                log_print(f"Error, Row name mismatch, first error occured at row named: {e}")
+                messagebox.showwarning("Error", f"Row name mismatch, first error occured at row named: {e}")
+            except Exception as e:
+                log_print(f"Unknown error has occured: {e}")
+                messagebox.showwarning("Error", f"Unknown error has occured: {e}")
+        return 
 
 
     
