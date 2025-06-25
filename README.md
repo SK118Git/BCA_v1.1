@@ -1,5 +1,6 @@
 
 # Table of Contents:
+ [Table of Contents:](#table-of-contents)
 - [Table of Contents:](#table-of-contents)
 - [I. Prep Work:](#i-prep-work)
   - [A. In the *Timeseries Sheet*](#a-in-the-timeseries-sheet)
@@ -12,10 +13,10 @@
     - [Output 2 (Borselle V Method):](#output-2-borselle-v-method)
 - [II. Launching the app:](#ii-launching-the-app)
   - [Via Python](#via-python)
-  - [Using the provided executables](#using-the-provided-executables)
+  - [Using the provided executables (RECOMMENDED)](#using-the-provided-executables-recommended)
   - [Compiling it yourself](#compiling-it-yourself)
-    - [On Windows](#on-windows)
-    - [On MacOS/Linux](#on-macoslinux)
+    - [On Windows (RECOMMENDED)](#on-windows-recommended)
+    - [On MacOS/Linux (RECOMMENDED)](#on-macoslinux-recommended)
     - [On any platform](#on-any-platform)
       - [Using Python](#using-python)
       - [Using Make](#using-make)
@@ -23,6 +24,10 @@
   - [A. File Structure:](#a-file-structure)
   - [B. The Business Case Logic:](#b-the-business-case-logic)
 - [IV. Modifying the code to suit the BC:](#iv-modifying-the-code-to-suit-the-bc)
+
+
+
+
 
 # I. Prep Work:
 
@@ -128,11 +133,12 @@ The code's entry point is src/main.py so you simply need to run that file to get
 You can also run manually:
 
 On windows (run these commands one by one):
-```bat
-py -m venv venv
+```cmd
+REM I am using py here but use whatever the name of you rpython command is for the first line 
+py -m venv venv 
 .\venv\Scripts\activate
 python -m pip install ".[dependencies,build]"
-python src/main.py 
+python src/main.py
 ```
 
 On MacOS/Linux (run these commands one by one):
@@ -144,22 +150,22 @@ python src/main.py
 ```
 
 
-## Using the provided executables
+## Using the provided executables (RECOMMENDED)
 
-You can simply use the app by going to the **executables** folder and unzipping the relevant folder: win.zip if you are on windows, and unix.zip if you are on mac. In the newly unzipped folder you will find the packaged application ready to go!
+You can simply use the app by going to the **executables** folder and unzipping the relevant folder: [win.zip](executables/win.zip) if you are on Windows, and [unix.zip](executables/unix.zip) if you are on Mac. In the newly unzipped folder you will find the packaged application ready to go!
 
 ## Compiling it yourself
 
 This process is a bit more tedious as you may run into unforseen errors. However I did my best to manage as many of the errors as possible 
 
-### On Windows
+### On Windows (RECOMMENDED)
 
-Simply launch the **prep.bat** file, either by double clicking it or by running it in the terminal.
+Simply launch the [prep.bat](prep.bat) file, either by double clicking it or by running it in the terminal.
 The compiled app wil appear in the dist folder.
 
-### On MacOS/Linux
+### On MacOS/Linux (RECOMMENDED)
 
-Simply launch the **prep.sh** file, either by double clicking it or by running it in the terminal
+Simply launch the [prep.sh](prep.sh) file, either by double clicking it or by running it in the terminal
 The compiled app wil appear in the dist folder.
 
 ### On any platform
@@ -167,10 +173,10 @@ The compiled app wil appear in the dist folder.
 #### Using Python
 
 On windows (run these commands one by one):
-```bat
-py -m venv venv
+```cmd
+py -m venv venv REM or use whtaver the name of you rpython executable is
 .\venv\Scripts\activate
-python -m pip install tomlib tomli # whichever works
+python -m pip install tomlib tomli REM whichever works
 python -m pip install pyinstaller 
 python build.py 
 ```
@@ -189,9 +195,11 @@ The compiled app wil appear in the dist folder.
 #### Using Make
 
 Run in the following order:
-+ make venv
-+ make install
-+ make build
+```shell
+make venv
+make install
+make build
+```
 
 The compiled app wil appear in the dist folder.
 

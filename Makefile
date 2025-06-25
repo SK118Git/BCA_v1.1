@@ -1,9 +1,5 @@
 # Makefile for BCA project (Windows + Unix compatible)
-
-
-
 .PHONY: help venv install install-dev install-build install-all build build-gui clean run test-exe dev-setup echo_python
-
 ifeq ($(OS),Windows_NT) 
 PYTHON := $(shell cmd /C prep\\find_py.bat)
 POWERSHELL := C:/Windows/System32/WindowsPowerShell/v1.0/powershell.exe
@@ -22,7 +18,7 @@ RUN_EXE := dist\BCA_Tool.exe
 DELETE := del
 else
 PYTHON := $(shell ./prep/find_py.sh)
-HELP_COMMAND := grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "  \033[36m%-15s\033[0m %s\n", $$1, $$2}'
+HELP_COMMAND := ./prep/make_help.sh $(MAKEFILE_LIST)
 VENV_PYTHON := venv/bin/python
 ACTIVATE := source venv/bin/activate
 RUN_EXE := ./dist/BCA_Tool

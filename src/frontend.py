@@ -2,7 +2,6 @@
 # gui.py - File containg all functions that don't need to be modified, are not used for plotting, nor the GUI, not the BCA 
 # ============================================================================================================================
 # External library imports 
-from math import log
 import tkinter as tk
 from tkinter import ttk
 from tkinter import filedialog
