@@ -2,9 +2,6 @@
 # extra.py - File containg all functions that don't need to be modified, are not used for plotting, nor the GUI, not the BCA 
 # =================================================================================================================================
 # External Imports 
-import logging
-import os
-import sys
 import pandas as pd 
 import numpy as np
 import numpy_financial as npf
@@ -14,7 +11,7 @@ T = TypeVar('T')
 def coerce_byte(input:Any, desired_types:Sequence[Callable[[str], T]]) -> T:
     """ 
     Function purpose: This function allows safe coercion from the Pandas Scalar type to any other type (the problem is that Scalar can be a bytes type and as such cant be directly coerced into a numeric type, needing to be first decoded into a string) \n
-    Outputs: the inout variable but safely coerced to the minimal desired type \n
+    Outputs: the input variable but safely coerced to the minimal desired type \n
     Note: The user can put [int, float] in which case the function will coerce to int if possible, else will coerce to float 
     Args: 
         input: the variable you want to change the type of 
@@ -83,10 +80,9 @@ def find_index(container:dict[Key, Any], search_for:Key) -> int:
     """ 
     Function purpose: Finds the index of a given key in a dictionnary  \n
     Outputs: the index of the key, or -1 if an error has occurred
-
     Args: 
         container: a python dictionnary 
-        search_for: the key to find \n
+        search_for: the key to find n
     """
     try:
         return list(container.keys()).index(search_for)
@@ -100,7 +96,7 @@ def safe_irr(cash_flows) -> float:
     """ 
     Function purpose:  Ensures the calculated irr value isn't a completely unrealistic value \n
     Outputs: a cleaned irr 
-    Args: the cash flows \n
+    Args: cash_flows: the cash flows
     """
     irr = npf.irr(cash_flows)
     
@@ -114,37 +110,3 @@ def safe_irr(cash_flows) -> float:
         return irr
 
 
-#_______________________________________________________________________________________________________________________________________________
-# Allows for logging in GUI mode
-
-def setup_logging():
-    """Set up logging to file with append mode"""
-    if getattr(sys, 'frozen', False):  # Running as PyInstaller bundle
-        app_dir = os.path.dirname(sys.executable)
-        log_file = os.path.join(app_dir, 'app.log')
-    else:
-        log_file = 'app.log'
-    
-    # Configure logging
-    logging.basicConfig(
-        level=logging.INFO,
-        format='%(asctime)s - %(message)s',
-        handlers=[
-            logging.FileHandler(log_file, mode='a'),  # 'a' for append mode
-        ]
-    )
-    
-    # Add session separator
-    logging.info("=" * 50)
-    logging.info("NEW SESSION STARTED")
-    logging.info("=" * 50)
-    
-    return logging.getLogger(__name__)
-
-# We initialize the project wide logger here. Probably not optimal and should instead be put into its own file 
-logger = setup_logging()
-def log_print(message):
-    """Replace print() with this function"""
-    logger.info(message)
-    # Optionally also print to console if you want both
-    print(message)

@@ -9,17 +9,17 @@ import plotly.graph_objects as go
 import plotly.io as pio
 from matplotlib.figure import Figure
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
-from pandas import DataFrame
 from datetime import datetime
 
 # ============================================================================================================================
 # Internal imports
-from extra import log_print
+from libs.logger import log_print
+from modify.bca_class import Business_Case
 
 
 
 
-def plot_soc(df:DataFrame, scenario_name:str, debug_mode:bool, plotting:bool, *args) -> None:
+def plot_soc(business_case:Business_Case, scenario_name:str, debug_mode:bool) -> None:
     """
     Function Purpose: Show the SOC plot in a new popup window.
     Args:
@@ -27,12 +27,12 @@ def plot_soc(df:DataFrame, scenario_name:str, debug_mode:bool, plotting:bool, *a
         scenario_name: the name of the current scenario
         debug_mode: if True adds debug log statements
     """
-    log_print("Entered plot for soc for scenario {scenario_name}.")
+    log_print(f"Entered plot for soc for scenario {scenario_name}.")
 
     # Compute metrics
-    df["energy_change"] = df["end_soc_values"].diff().abs()
-    total_throughput = df["energy_change"].sum()
-    battery_nominal_capacity = df["end_soc_values"].max() - df["end_soc_values"].min()
+    business_case.df["energy_change"] = business_case.df["end_soc_values"].diff().abs()
+    total_throughput = business_case.df["energy_change"].sum()
+    battery_nominal_capacity = business_case.df["end_soc_values"].max() - business_case.df["end_soc_values"].min()
     equivalent_cycles = total_throughput / battery_nominal_capacity
 
     if debug_mode: log_print(f"Total Throughput: {total_throughput:.2f} MWh.")
@@ -40,12 +40,12 @@ def plot_soc(df:DataFrame, scenario_name:str, debug_mode:bool, plotting:bool, *a
 
     # Histogram setup
     bins = np.arange(0, 105, 5)
-    hist_values, bin_edges = np.histogram(df["per_state_of_charge"], bins=bins)
+    hist_values, bin_edges = np.histogram(business_case.df["per_state_of_charge"], bins=bins)
     total_points = sum(hist_values)
-    hist_values = (hist_values / total_points) * 100
+    hist_values = (hist_values / total_points) * 100 # type: ignore
     bin_labels = [f"[{int(bin_edges[i])}-{int(bin_edges[i+1])}]" for i in range(len(bin_edges)-1)]
 
-    if plotting:
+    if business_case.plotting:
         # Create popup window
         popup = tk.Toplevel()
         popup.title(f"Scenario {scenario_name}: State of Charge (SOC) Distribution")
@@ -63,7 +63,7 @@ def plot_soc(df:DataFrame, scenario_name:str, debug_mode:bool, plotting:bool, *a
     ax.set_xticklabels([f"{int(x)}%" for x in np.arange(0, 110, 10)])
     ax.grid(axis="x", linestyle="--", alpha=0.7)
 
-    if plotting:
+    if business_case.plotting:
         # Embed in popup
         canvas = FigureCanvasTkAgg(fig, master=popup)
         canvas.draw()
@@ -76,7 +76,7 @@ def plot_soc(df:DataFrame, scenario_name:str, debug_mode:bool, plotting:bool, *a
 
 
 #_____________________________________________________________________________________________________________________________
-def plot_dop(df:DataFrame, scenario_name:str, debug_mode:bool, plotting:bool, power_level:int|float, *args):
+def plot_dop(business_case:Business_Case, scenario_name:str, debug_mode:bool):
     """
     Function Purpose: Show the SOC plot in a new popup window.
     Args:
@@ -88,16 +88,16 @@ def plot_dop(df:DataFrame, scenario_name:str, debug_mode:bool, plotting:bool, po
     log_print(f"Entered plot of dop for scenario {scenario_name}")
 
     # Drop NaNs
-    power_series = df['eff_charge_discharge'].dropna()
+    power_series = business_case.df['eff_charge_discharge'].dropna()
 
     # Define bins (1 MW width from -power_level to +power_level)
-    bins = np.arange(-power_level, power_level + 1, 1)
+    bins = np.arange(-business_case.power_level, business_case.power_level + 1, 1)
 
     # Histogram with manual normalization
     counts, bin_edges = np.histogram(power_series, bins=bins)
     percentages = counts / counts.sum() * 100
 
-    if plotting:
+    if business_case.plotting:
         # Create a new popup Tkinter window
         popup = tk.Toplevel()
         popup.title(f"Scenario {scenario_name}: Distribution of Charging/Discharging Power")
@@ -123,7 +123,7 @@ def plot_dop(df:DataFrame, scenario_name:str, debug_mode:bool, plotting:bool, po
 
     fig.tight_layout()
 
-    if plotting:
+    if business_case.plotting:
         # Embed the figure in the Tkinter window
         canvas = FigureCanvasTkAgg(fig, master=popup)
         canvas.draw()

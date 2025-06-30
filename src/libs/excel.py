@@ -13,50 +13,12 @@ from openpyxl.styles import Border
 from openpyxl.utils import get_column_letter
 
 # ============================================================================================================================
-# Internal Imports (The required constants) 
-from popup import Progress_Popup
-from modifiable import BOLD_FONT, COLOR_FILLS, THIN_BORDER
-from extra import log_print
+# Internal Imports 
+from frontend.popup import Progress_Popup
+from libs.logger import log_print
+from modify.settings import BOLD_FONT, COLOR_FILLS, THIN_BORDER
 
 #_____________________________________________________________________________________________________________________________
-# These functions are used for managing pandas Dataframes read from Excel files
-
-def read_df(file_name:str, df_sheetname:str) -> pd.DataFrame:
-    """ 
-    Function purpose: Reads and turns into a pandas Dataframe the timeseries sheet \n
-    Outputs: pandas Dataframe of said excel sheet 
-
-    Args:
-        file_name : the name of the excel file 
-        df_sheetname : name of the Timeseries sheet 
-    """
-    df = pd.read_excel(file_name, sheet_name=df_sheetname, header=0, engine="openpyxl")
-    return df
-
-
-def read_pdf(file_name:str, pdf_sheetname:str) -> pd.DataFrame:
-    """ 
-    Function purpose:  Reads the excel sheet where the parameters by scenario are located \n
-    Outputs: a pandas Dataframe of said excel sheet \n
-    Note: The reason this function is different than the other is that in the original code  (probably to make the calculations doable for numpy) 
-    the dataframe was manipulated in  a particular way. This code slightly modified the previous method to fix a few bugs that arose. \n 
-
-    Args: 
-        file_name: the name of the excel file 
-        pdf_sheetname: the name of the excel sheet where the parameters are defiend for each scenario 
-    """
-
-    # Read Input Parameters from the param_df
-    wb = load_workbook(file_name, data_only=True)
-    sheet = wb[pdf_sheetname]
-
-    # Convert sheet to DataFrame manually
-    data = sheet.values
-    cols = next(data)   
-    param_df = pd.DataFrame(data, columns=cols)
-
-    return param_df 
-
 
 #_________________________________________________________________________________________________________________________________________
 # These functions define the behaviour for saving, styling and formatting to an excel sheet 

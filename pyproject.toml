@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "FLASC_BCA"  
-version = "0.4.0"
+version = "0.7.0"
 description = "Python frontend for Flasc's Busienss Case Anlaysis Tool"
 authors = [
     {name = "Daniel", email = "danial.buhagiar@flasc.eu"},  

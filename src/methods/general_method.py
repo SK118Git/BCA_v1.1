@@ -1,109 +1,13 @@
-# ============================================================================================================================
-# bca.py - File containg all functions that don't need to be modified, are not used for plotting, nor the GUI, not the BCA 
-# ============================================================================================================================
-# External Imports 
-import pandas as pd
+
 import numpy as np
-import numpy_financial as npf
-from typing import Any
-# ============================================================================================================================
-# Internal Imports 
-from extra import find_scenario_index, safe_irr, coerce_byte, log_print
-from excel import force_excel_calc, read_pdf, read_df, save_to_excel
-from popup import Progress_Popup
-from modifiable import calculate_ap, calculate_atc
-# ============================================================================================================================
-
-# This is the entry point into the BCA 
-def run(file_name:str, output_sheet_name:str, debug_mode:bool, paste_to_excel:bool, case_type:int, method:int, input_values:dict[str, Any], chosen_plots:dict[str, Any],  progress_pp:Progress_Popup):
-    """
-    Function purpose: this function serves as the entry point into the BC logic \n 
-    Note: The BCA logic was split into these subfunctions to allow for modularity and the multitude of methods/cases
-
-    Args: 
-        file_name: the name of the excel file studied 
-        output_sheet_name: the sheet the result should be saved to if paste_to_excel is True 
-        debug_mode: enables additional print statements for debugging and backtracing 
-        paste_to_excel: determines whether or not the final result needs to be saved directly to excel, if False will just copy to clipboard 
-        case_type: the type of case being studied 
-        method: the type of method being used to calculate the available pwoer and transmission capacity 
-        input_values: a dictionnary where all the user inputed values (through the GUI) are, can also be defined manually like in tests.py: (key:string|float) 
-        chosen_plots: a dictionnary where the information is stored about which polots the user chose to do:  (key:boolean) 
-        progress_pp: the progress bar and the label that appears above the progress bar, set to optional for compatibility with tests 
-    """
-    force_excel_calc(file_name)
-
-    df_sheet_name:   str          = input_values['Timeseries Sheet Name']
-    param_df_sheet_name:  str          = input_values["Param Analysis Sheet Name"]
-    df:             pd.DataFrame = read_df(file_name, df_sheet_name)
-    param_df:       pd.DataFrame = read_pdf(file_name, param_df_sheet_name)
-    scenario:       str          = input_values["Scenario(s) (seperate with ',' or write 'All')"]
-
-    try:
-        df['Intra-Day Prices [Euro/MWh]'] = df["Day-Ahead Prices [Euro/MWh]"] + (df["Imbalance Prices [Euro/MWh]"] - df["Day-Ahead Prices [Euro/MWh]"]) * 0.5
-    except Exception:
-        pass 
-    try:
-        df['Available Power [MW]'] = calculate_ap(df, method)
-    except Exception:
-        if debug_mode: log_print("Didn't calculate ap")
-        pass 
-
-    df['Available Transmission Capacity [MW]'] = calculate_atc(df, method, input_values)
+import pandas as pd
+import numpy_financial as npf 
+from libs.extra import coerce_byte, safe_irr
+from libs.logger import log_print
+from modify.bca_class import Business_Case
 
 
-    df["Date"] = pd.to_datetime(df["Date"], format="%d/%m/%Y")
-
-    # Compute total days covered
-    days_covered = (df["Date"].max() - df["Date"].min()).days
-    days_covered = coerce_byte(days_covered, [float])
-
-    # Convert to years
-    years_covered = days_covered / 365.25  # Using 365.25 to account for leap years
-
-    plotting = True 
-
-    scenario_list: pd.Series[Any] | list[str]
-    if scenario.upper() == "ALL":
-        scenario_list = param_df["Scenario"].dropna()
-        plotting = False 
-    else:
-        scenario_list = [word.strip() for word in scenario.split(",")]
-
-    progress_counter:int = 0
-    for individual_scenario in scenario_list:
-        scenario_index = find_scenario_index(param_df, individual_scenario)
-        (result, power_level) = launch_analysis(df, param_df, input_values,  years_covered, case_type, method, scenario_index, debug_mode)
-        progress_counter +=1
-        for key in chosen_plots:
-            if chosen_plots[key][0]:
-                chosen_plots[key][1](df, individual_scenario, debug_mode, plotting, power_level)
-        percent: float = (progress_counter/len(scenario_list)) * 100
-        log_print(f"Progress: {percent}% done")
-        
-        progress_pp.update_vals("Computing Simulation", percent)
-        
-    log_print("Simulations Complete! \n ")
-
-    selected_data: pd.DataFrame = result.iloc[:, 7:] # type: ignore
-
-    # Copy to clipboard without the index
-    selected_data.to_clipboard(index=False, header=False)
-
-    log_print("Data copied to clipboard!\n")
-    progress_pp.update_vals("Data Copied to Clipboard", 0)
-   
-    if paste_to_excel: 
-        progress_pp.update_vals('Beginning save to excel', 0)
-       
-        save_to_excel(file_name, output_sheet_name, debug_mode, param_df, progress_pp)
-    
-    log_print("Program execution complete!")
-    return 
-
-#_______________________________________________________________________________________________________________________________________________________________________________
-
-def launch_analysis(df:pd.DataFrame, param_df:pd.DataFrame, input_values:dict[str,Any],  years_covered:float, case_type:int, method:int,  scenario_index:int, debug_mode:bool) -> tuple[pd.DataFrame, float]:
+def general_method(business_case:Business_Case,  scenario_index:int, debug_mode:bool) -> pd.DataFrame:
     """
     Function purpose: Launches a BC Analysis for a single scenario \n 
     Outputs: a tuple containing the result of the analysis and the power level defined here (which is needed for the plots afterwards) 
@@ -117,49 +21,49 @@ def launch_analysis(df:pd.DataFrame, param_df:pd.DataFrame, input_values:dict[st
         scenario_index: the row number of the scenario 
         debug_mode: enables additional print statements for debugging and backtracing 
     """
-    ppa_price = param_df.loc[scenario_index, 'PPA Price']
+    ppa_price = business_case.param_df.loc[scenario_index, 'PPA Price']
     ppa_price =  coerce_byte(ppa_price, [int, float])
 
-    balancing_percentage = param_df.loc[scenario_index, 'Balancing Market Participation']
+    balancing_percentage = business_case.param_df.loc[scenario_index, 'Balancing Market Participation']
     balancing_percentage = coerce_byte(balancing_percentage, [float])
 
     try: 
-        price_type = param_df.loc[scenario_index, 'Market Type']
+        price_type = business_case.param_df.loc[scenario_index, 'Market Type']
         price_type = coerce_byte(price_type, [str])
     except Exception:
         log_print(f"An error has occured with price_type assignment: {Exception}")
         price_type = ""
 
-    power_level = param_df.loc[scenario_index, 'Storage Power Rating']
-    power_level = coerce_byte(power_level, [int, float])
+    power_level = business_case.param_df.loc[scenario_index, 'Storage Power Rating']
+    business_case.power_level = coerce_byte(power_level, [int, float])
 
-    storage_time_hr = param_df.loc[scenario_index, 'Duration']
+    storage_time_hr = business_case.param_df.loc[scenario_index, 'Duration']
     storage_time_hr = coerce_byte(storage_time_hr, [int, float])
 
-    if case_type == 1:
-        solar_MWp = param_df.loc[scenario_index, 'Solar Installed (MWp)']
+    if business_case.case_type == 1:
+        solar_MWp = business_case.param_df.loc[scenario_index, 'Solar Installed (MWp)']
         solar_MWp = coerce_byte(solar_MWp, [int, float])
     else:
         solar_MWp = 0 
 
-    result  = pd.Series(run_bus_case(df=df, input_values=input_values, ppa_price=ppa_price, balancing_percentage=balancing_percentage, price_type=price_type, power_level=power_level, storage_time_hr=storage_time_hr, years_covered=years_covered, case_type=case_type, solar_MWp=solar_MWp))
+    result  = pd.Series(run_bus_case(business_case, ppa_price, balancing_percentage, price_type, storage_time_hr, solar_MWp))
 
-    if case_type == 1: 
-        param_df.iloc[scenario_index, 8:24] = result
+    if business_case.case_type == 1: 
+        business_case.param_df.iloc[scenario_index, 8:24] = result
     else:
-        if method == 1:
-            param_df.iloc[scenario_index, 7:24] = result
+        if business_case.method == 1:
+            business_case.param_df.iloc[scenario_index, 7:24] = result
         else: 
-            param_df.iloc[scenario_index, 7:22] = result 
+            business_case.param_df.iloc[scenario_index, 7:22] = result 
 
-    return (param_df, power_level)
+    return business_case.param_df
     
 
 
 
 #_______________________________________________________________________________________________________________________________________________________________________________
 
-def run_bus_case(df:pd.DataFrame, input_values:dict[str, Any], ppa_price:float|int, balancing_percentage:float, price_type:str, power_level:float|int, storage_time_hr:float|int, years_covered:float, case_type:int, solar_MWp:float|int=0) :
+def run_bus_case(business_case, ppa_price:float|int, balancing_percentage:float, price_type:str, storage_time_hr:float|int, solar_MWp:float|int=0) :
     """
     Function purpose: This function is the one that actually computes the BC given the user defined inputs and the scenario parameters 
     Outputs: a dataframe/list (?) called results which contains the result of the BC 
@@ -178,9 +82,12 @@ def run_bus_case(df:pd.DataFrame, input_values:dict[str, Any], ppa_price:float|i
     """
     global cash_flows
 
+    df = business_case.df
+    power_level = business_case.power_level
+    years_covered = business_case.years_covered
     #% INPUT VALUES
     #settlement period as a fraction of an hour: 15 min = 0.25
-    settlement_period = input_values['Settlement Period'] /60 
+    settlement_period = business_case.input_values['Settlement Period'] /60 
 
     # Determine which Energy Prices to Use (based on "Market Type Parameter")
     
@@ -195,17 +102,17 @@ def run_bus_case(df:pd.DataFrame, input_values:dict[str, Any], ppa_price:float|i
         raise ValueError("Invalid price type. Use 'IMB' or 'INTRA'.")
     
     #efficiency charging and discharging: square root of the RTE
-    efficiency = input_values['Storage RTE'] ** 0.5
+    efficiency = business_case.input_values['Storage RTE'] ** 0.5
 
     #power price
     # discount_on_wholesale = input_values['Discount on Day-Ahead'].iloc[-1]  #Wholesale_Price Calculation below
-    green_certificate = input_values['Green-Certificate Price'] #€/MWh renewable energy producers receive these in proportion to their production, and offshore wind projects benefit by law from a guaranteed 4 June 2014 purchase of these "green certificates" by Elia, the Belgian grid operator, at a fixed price of 107 EUR/MWh for 20 years.
+    green_certificate = business_case.input_values['Green-Certificate Price'] #€/MWh renewable energy producers receive these in proportion to their production, and offshore wind projects benefit by law from a guaranteed 4 June 2014 purchase of these "green certificates" by Elia, the Belgian grid operator, at a fixed price of 107 EUR/MWh for 20 years.
     
     # Storage capacity 
     capacity = power_level * storage_time_hr
 
     # #Adjust Solar Power based on Scenario (Default Data is for 15 MWp)
-    if case_type == 1: 
+    if business_case.case_type == 1: 
         df['Available Power [MW]'] = df['Belwind (181MW)'] + ((solar_MWp/15) * df['OOE Production (15MWp) [MW]'])    
     #Limit Exported Power to the Transmission Capacity: This corresponds to the "No Storage" scenario and is used for calculating over-production available for charging
     
@@ -342,16 +249,16 @@ def run_bus_case(df:pd.DataFrame, input_values:dict[str, Any], ppa_price:float|i
     
     #%% NPV Calculation
     #Storage CAPEX & OPEX
-    Unit_CAPEX_kW  = input_values['Power Unit CAPEX'] # €/kW (Cost of Power)
-    Unit_CAPEX_kWh = input_values['Capacity Unit CAPEX'] # €/kWh (Cost of Capacity)
-    OPEX_rate = input_values['Annual OPEX Rate']      # % of CAPEX per year
+    Unit_CAPEX_kW  = business_case.input_values['Power Unit CAPEX'] # €/kW (Cost of Power)
+    Unit_CAPEX_kWh = business_case.input_values['Capacity Unit CAPEX'] # €/kWh (Cost of Capacity)
+    OPEX_rate = business_case.input_values['Annual OPEX Rate']      # % of CAPEX per year
     
     Storage_CAPEX = 1e3* (Unit_CAPEX_kW * power_level + Unit_CAPEX_kWh * (storage_time_hr * power_level))
     Storage_OPEX = Storage_CAPEX * OPEX_rate
     
-    Project_Life = int(input_values['Project Life']) #years
+    Project_Life = int(business_case.input_values['Project Life']) #years
     
-    discount_rate = input_values['Discount Rate']  # 10% discount rate
+    discount_rate = business_case.input_values['Discount Rate']  # 10% discount rate
     
     storage_total_income = (df['storage_income'].sum() + df['extra_generation_income'].sum())       #Wind + Storage total income
     storage_net_income_ANNUAL = (storage_total_income - df['baseline_income'].sum())/years_covered  #Annualise Income only attrubuted to storgae: [A] + [B] + [C]
@@ -361,10 +268,10 @@ def run_bus_case(df:pd.DataFrame, input_values:dict[str, Any], ppa_price:float|i
     #IRR = npf.irr(cash_flows)
     # npf.npv(discount_rate, cash_flows) Python NPV calc starts discounting from Year 0 / Excel NPV discounts from Year 1 <- more accepted method
 
-    IRR = safe_irr(cash_flows)
+    irr = safe_irr(cash_flows)
     # Correct Excel-style NPV calculation (discounting starts from Year 1)
     #NPV = cash_flows[0] + sum(cf / (1 + discount_rate) ** i for i, cf in enumerate(cash_flows[1:], start=1))
-    NPV = npf.npv(discount_rate, cash_flows[1:]) + cash_flows[0]
+    npv = npf.npv(discount_rate, cash_flows[1:]) + cash_flows[0]
     try:
         result = [
                 # --- Energy Potential and Curtailment Breakdown ---
@@ -393,8 +300,8 @@ def run_bus_case(df:pd.DataFrame, input_values:dict[str, Any], ppa_price:float|i
                 storage_total_income / years_covered,                                                                # [O]: Total revenue with storage (baseline + A + B + C)
 
                 # --- Financial Returns ---
-                IRR,                                                                                                 # [P]: Internal Rate of Return of storage project
-                NPV                                                                                                  # [Q]  NPV of the storage project 
+                irr,                                                                                                 # [P]: Internal Rate of Return of storage project
+                npv                                                                                                  # [Q]  NPV of the storage project 
             ]    
     except Exception: #Borssele V method
         result = [
@@ -424,13 +331,10 @@ def run_bus_case(df:pd.DataFrame, input_values:dict[str, Any], ppa_price:float|i
                 storage_total_income / years_covered,                                                                # [O]: Total revenue with storage (baseline + A + B + C)
 
                 # --- Financial Returns ---
-                IRR,                                                                                                 # [P]: Internal Rate of Return of storage project
-                NPV                                                                                                  # [Q]  NPV of the storage project 
+                irr,                                                                                                 # [P]: Internal Rate of Return of storage project
+                npv                                                                                                  # [Q]  NPV of the storage project 
             ]    
     return result  
-
-
-
 
 
 

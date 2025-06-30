@@ -12,10 +12,12 @@ import pandas as pd
 
 # =============================================================================
 # Internal library imports 
-from modifiable import AVAILABLE_PLOTS, INPUT_FIELDS, GUI_CONFIG, STRING_BASED, CHOICE_MATRIX
-from extra import update_dict, find_index, log_print
-from bca import run 
-from popup import Progress_Popup
+from libs.excel import force_excel_calc
+from libs.logger import log_print
+from libs.extra import update_dict, find_index
+from modify.bca_entrypoint import run
+from modify.settings import AVAILABLE_PLOTS, INPUT_FIELDS, GUI_CONFIG, STRING_BASED, CHOICE_MATRIX
+from frontend.popup import Progress_Popup
 # =============================================================================
 
 
@@ -44,6 +46,8 @@ class BCA_App:
         self.root = root
         self.debug_mode = tk.BooleanVar(value=False) 
         self.paste_to_excel = tk.BooleanVar(value=False)
+        self.use_gen_method = tk.BooleanVar(value=False)
+        self.has_recalced = False 
         self.amount_widgets:int = 0
 
         self.selected_plots: dict[str, tk.BooleanVar] = {}
@@ -244,6 +248,8 @@ class BCA_App:
             }
 
         clean_paste_to_excel: bool = self.paste_to_excel.get()
+        clean_gen_flag = self.use_gen_method.get()
+        log_print(f"Current value of gen_flag is {clean_gen_flag}")
 
 
         popup = tk.Toplevel(self.root)
@@ -268,23 +274,25 @@ class BCA_App:
             self.method,
             clean_input_values,
             clean_selected_plots,
-            progress_pp
+            progress_pp,
+            clean_gen_flag,
+            self.has_recalced
         ))
         thread.start()
         
         return
 
-    def no_error_run(self, selected_file:str,  excel_output_sheet_name:str, debug_status:bool, paste_to_excel:bool, case_type:int, method:int, input_values:dict[str, Any], selected_plots:dict[str, Any], progress_pp:Progress_Popup):
+    def no_error_run(self, selected_file:str,  excel_output_sheet_name:str, debug_status:bool, paste_to_excel:bool, case_type:int, method:int, input_values:dict[str, Any], selected_plots:dict[str, Any], progress_pp:Progress_Popup, gen_flag:bool, recalc_flag:bool):
         """
         Function purpose: Function which catches final errors when trying to run
         """
         assert(progress_pp.bar != None and progress_pp.label != None)
 
         try:
-           run(selected_file, excel_output_sheet_name, debug_status, paste_to_excel, case_type, method, input_values, selected_plots, progress_pp)
-        except AttributeError:
+           run(selected_file, excel_output_sheet_name, debug_status, paste_to_excel, case_type, method, input_values, selected_plots, progress_pp, gen_flag, recalc_flag)
+        except AttributeError as e:
             progress_pp.bar.stop() 
-            progress_pp.label.config(text="Error: You didn't select a file") 
+            progress_pp.label.config(text=f"Error: {e}") 
         except ValueError as e:
             progress_pp.bar.stop()
             progress_pp.label.config(text="Error (ValueError): " + str(e) + "\n Make sure you selected the right method and named the columns correctly.")
@@ -378,7 +386,7 @@ class BCA_App:
           who: which entry called this function
           what: the text that the user has just inputted \n 
         """
-        log_print(f"Currently entry named: {who} is being validated")
+        if self.debug_mode.get(): log_print(f"Currently entry named: {who} is being validated")
         isValid:bool = True 
         if what == '':
             return True
@@ -453,6 +461,9 @@ class BCA_App:
         i+=2
 
 
+        ttk.Checkbutton(popup, text="Do you wish to use the general methods?", variable=self.use_gen_method).grid(column=0, row=i, pady=10, sticky="sw")
+        i += 1
+
         # Adding more space
         i+= 1
         # Debug_button
@@ -475,14 +486,16 @@ class BCA_App:
 
     def load_vals(self) -> None: 
         if self.load_vals_label.get() != "":
+            force_excel_calc(self.selected_file)
+            self.has_recalced = True
             try:
                 vals = pd.read_excel(self.selected_file, sheet_name=self.load_vals_label.get(), index_col=0, header=None)
                 log_print(f"Values found in sheet names {self.load_vals_label.get()}: \n {vals}" )
                 for key in self.entries:
                     if key not in STRING_BASED:
                         log_print(f"Currently modifying value of {key} and replacing with {vals.loc[key].dropna().iloc[0]}")
-                        self.entries[key][0].delete(0, 'end')
-                        self.entries[key][0].insert(0, vals.loc[key].dropna().iloc[0])
+                        self.entries[key][0].delete(0, 'end') # type: ignore
+                        self.entries[key][0].insert(0, vals.loc[key].dropna().iloc[0]) # type: ignore
             except ValueError:
                 log_print("Error, no worksheet with that name found")
                 messagebox.showwarning("Error", "No worksheet with that name was found")

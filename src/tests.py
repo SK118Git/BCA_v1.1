@@ -2,8 +2,8 @@
 # tests.py - File used for testing, serves as a firect entry point into the BA functions 
 # ==============================================================================================
 # Internal imports:
-from bca import run
-from popup import Progress_Popup 
+from modify.bca_entrypoint import run
+from frontend.popup import Progress_Popup 
 # ==============================================================================================
 
 """
@@ -27,8 +27,9 @@ _____________________________________________
 
 
 #%% Values for testing IMV -- Test Passed 
-from modifiable import AVAILABLE_PLOTS
-from bca import run
+from modify.settings import AVAILABLE_PLOTS
+from modify.bca_entrypoint import run
+from frontend.popup import Progress_Popup
 inputs_2 = {
     "Settlement Period":15.0,
     "Storage RTE":0.7,
@@ -39,7 +40,7 @@ inputs_2 = {
     "Project Life":25,
     "Discount Rate":0.0812,
     "Export Transmission Capacity":0.0, 
-    "Scenario(s) (seperate with ',' or write 'All')":"All",
+    "Scenario(s) (seperate with ',' or write 'All')":"B7",
     "Timeseries Sheet Name":"Timeseries_Input_2022",
     "Param Analysis Sheet Name":"Parametric Analysis"
 }
@@ -60,14 +61,15 @@ file_name = "/Users/sashakistnassamy/Desktop/IMV Gamma - Bus Case.xlsx"
 method = 0 
 dummy_popup = Progress_Popup()
 
-run(file_name, "testing2", True, True, case_type, method, inputs_2, clean_selected_plots, dummy_popup)
+run(file_name, "testing2", True, False, case_type, method, inputs_2, clean_selected_plots, dummy_popup, False)
 
 # ==============================================================================================
 # Test for BV 
 
 #%% Values to test BV --- test passed
-from modifiable import AVAILABLE_PLOTS
-from bca import run 
+from modify.settings import AVAILABLE_PLOTS
+from modify.bca_entrypoint import run 
+from frontend.popup import Progress_Popup
 inputs_2 = {
     "Settlement Period":15.0,
     "Storage RTE":0.7,
@@ -78,7 +80,7 @@ inputs_2 = {
     "Project Life":25,
     "Discount Rate":0.0812,
     "Export Transmission Capacity":0.0, 
-    "Scenario(s) (seperate with ',' or write 'All')":"All",
+    "Scenario(s) (seperate with ',' or write 'All')":"B7",
     "Timeseries Sheet Name":"BorsseleV_15min_2024",
     "Param Analysis Sheet Name":"Parametric Analysis"
 }
@@ -99,14 +101,15 @@ file_name = "/Users/sashakistnassamy/Desktop/Borssele V - Bus Case.xlsx"
 method = 1 
 
 dummy_popup = Progress_Popup()
-run(file_name, "testing2", True, True, case_type, method, inputs_2, clean_selected_plots,dummy_popup)
+run(file_name, "testing3", True, False, case_type, method, inputs_2, clean_selected_plots,dummy_popup, False)
 
 # ==============================================================================================
 # Test for Parkwind
 
 #%% Values to test Parkwind -- test passed
-from modifiable import AVAILABLE_PLOTS
-from bca import run 
+from modify.settings import AVAILABLE_PLOTS
+from modify.bca_entrypoint import run 
+from frontend.popup import Progress_Popup
 inputs_2 = {
     "Settlement Period":15.0,
     "Storage RTE":0.7225,
@@ -137,7 +140,7 @@ file_name = "/Users/sashakistnassamy/Desktop/Parkwind - Bus Case_2.xlsx"
 method = 2 
 
 dummy_popup = Progress_Popup()
-run(file_name, "testing", True, True, case_type, method, inputs_2, clean_selected_plots, dummy_popup)
+run(file_name, "testing3", True, True, case_type, method, inputs_2, clean_selected_plots, dummy_popup, True)
 
 # %%
 

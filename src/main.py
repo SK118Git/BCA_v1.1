@@ -5,7 +5,7 @@
 import tkinter as tk
 # =============================================================================
 # Internal imports 
-from frontend import BCA_App
+from frontend.frontend import BCA_App
 # =============================================================================
 
 def main() -> None:
