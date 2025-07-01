@@ -389,7 +389,7 @@ To allow your new code to be accessed by the program, you must add references to
 
 To have your newly written BC be used you must:
 
-1. Go to the [settings][src/modify/settings.py] file and add your method to the CHOICE_MATRIX, following the same format as the prior ones. If your BC is for a new case type you can also add an entry there for the case_type. You can determine the number of your method by simply counting left to right, top to bottom, all the methods in the CHOCIE_MATRIX (make sure you count the firt entry as the 0th).
+1. Go to the [settings](src/modify/settings.py) file and add your method to the CHOICE_MATRIX, following the same format as the prior ones. If your BC is for a new case type you can also add an entry there for the case_type. You can determine the number of your method by simply counting left to right, top to bottom, all the methods in the CHOCIE_MATRIX (make sure you count the firt entry as the 0th).
 
 2. Navigate to the [bca_entrypoint](src/modify/bca_entrypoint.py) file, and there go to the launch_analysis function, and add 
 ```python
@@ -415,11 +415,13 @@ To have your new plot function be accessed, go to the [settings](src/modify/sett
 And thats it! if you have correctly ensured compatibility with the old plots functions then it should work out of the box. 
 
 
-
-
 ## 4. Recompile 
 
+Once you have made your changes, and have confirmed that the code is running without any issues (which you can do by running [main.py](src/main.py), you can go ahead and recompile it into a permanenent and portable executable which doesn't require having acess to python and all the required libraries to run. 
+To recompille the app either:
+    - using python run the [build.py](build.py) file
+    - On windows run the [prep.bat](prep.bat) file
+    - On MacOS/Linux run the [prep.sh](prep.sh) file
+    - If you have make installed you can run ```make build```
 
-
-
-
+Once the app has been compiled it will appear in the dist folder. 
