@@ -1,12 +1,15 @@
 # =============================================================================
 # main.py - Entry point for the Business Case Analysis Tool
 # =============================================================================
-# External imports 
+# External imports
 import tkinter as tk
+
 # =============================================================================
-# Internal imports 
+# Internal imports
 from frontend.frontend import BCA_App
+
 # =============================================================================
+
 
 def main() -> None:
     """
@@ -15,6 +18,7 @@ def main() -> None:
     root = tk.Tk()
     app = BCA_App(root)
     root.mainloop()
+
 
 if __name__ == "__main__":
     main()

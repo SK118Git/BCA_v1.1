@@ -1,0 +1,40 @@
+2025-06-30 15:47:46,682 - ==================================================
+2025-06-30 15:47:46,682 - NEW SESSION STARTED
+2025-06-30 15:47:46,682 - ==================================================
+2025-06-30 15:47:46,884 - Running on macOS...
+2025-06-30 15:47:46,885 - Triggering macOS Automation prompt...
+2025-06-30 15:47:47,046 - osascript result: 
+2025-06-30 15:47:49,047 - Using xlwings to recalculate Excel formulas...
+2025-06-30 15:47:53,575 - Recalculation complete: /Users/sashakistnassamy/Desktop/IMV Gamma - Bus Case.xlsx.
+2025-06-30 15:48:00,459 - Current Value of method is 0
+2025-06-30 15:48:00,459 - Using Method 0
+2025-06-30 15:48:39,393 - ==================================================
+2025-06-30 15:48:39,393 - NEW SESSION STARTED
+2025-06-30 15:48:39,393 - ==================================================
+2025-06-30 15:48:39,581 - Running on macOS...
+2025-06-30 15:48:39,581 - Triggering macOS Automation prompt...
+2025-06-30 15:48:39,730 - osascript result: 
+2025-06-30 15:48:41,734 - Using xlwings to recalculate Excel formulas...
+2025-06-30 15:48:45,322 - Recalculation complete: /Users/sashakistnassamy/Desktop/IMV Gamma - Bus Case.xlsx.
+2025-06-30 15:48:52,163 - Current Value of method is 0
+2025-06-30 15:48:52,163 - Using Method 0
+2025-06-30 15:48:52,348 - Entered plot for soc for scenario {scenario_name}.
+2025-06-30 15:48:52,349 - Total Throughput: 90809.31 MWh.
+2025-06-30 15:48:52,349 - Equivalent Full Cycles: 227.02.
+2025-06-30 15:48:52,502 - SOC plot displayed in popup for scenario B7.
+2025-06-30 15:48:52,502 - Downloads directory resolved to be: /Users/sashakistnassamy/Downloads
+2025-06-30 15:48:52,502 - Target output directory: /Users/sashakistnassamy/Downloads/BCA_Plots
+2025-06-30 15:48:52,502 - Directory created successfully: True
+2025-06-30 15:48:52,583 - SOC plot saved for scenario B7.
+2025-06-30 15:48:52,583 - Entered plot of dop for scenario B7
+2025-06-30 15:48:52,675 - DOP plot displayed in popup for scenario B7.
+2025-06-30 15:48:52,675 - Downloads directory resolved to be: /Users/sashakistnassamy/Downloads
+2025-06-30 15:48:52,676 - Target output directory: /Users/sashakistnassamy/Downloads/BCA_Plots
+2025-06-30 15:48:52,676 - Directory created successfully: True
+2025-06-30 15:48:52,797 - DOP plot saved for scenario B7.
+2025-06-30 15:48:52,797 - Progress: 100.0% done
+2025-06-30 15:48:52,797 - Simulations Complete! 
+ 
+2025-06-30 15:48:52,815 - Data copied to clipboard!
+
+2025-06-30 15:48:52,815 - Program execution complete!

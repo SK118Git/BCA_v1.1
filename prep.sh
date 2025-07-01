@@ -1,18 +1,17 @@
 #!/bin/bash
 
 # Unix build script for BCA
-set -e  # Exit on error
+set -e # Exit on error
 
 echo "Building BCA executable..."
 echo ""
 
 PYTHON_BIN=$(./prep/find_py.sh)
 
-
 # Create virtual environment if not exists
 if [ ! -d "venv" ]; then
-    echo "Creating virtual environment..."
-    $PYTHON_BIN -m venv venv
+  echo "Creating virtual environment..."
+  $PYTHON_BIN -m venv venv
 fi
 
 # Activate venv
@@ -25,4 +24,3 @@ venv/bin/python -m pip install ".[all,build]"
 
 echo "Starting build process..."
 venv/bin/python build.py
-
