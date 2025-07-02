@@ -8,9 +8,10 @@ from typing import Callable
 # ============================================================================================================================
 # Internal library imports
 from methods.bv_method import bv_method
+from methods.elena_method import elena_method
 from methods.imv_method import imv_method
 from methods.parkwind_method import parkwind_method
-from modify.plots import plot_dop, plot_soc
+from modify.plots import elena_plot, plot_dop, plot_soc
 
 # ============================================================================================================================
 # Constants used throughout the program that you may 'freely' modify (at your own risk)
@@ -27,6 +28,7 @@ AVAILABLE_PLOTS: dict[str, Callable[..., None]] = (
     {  # Here lies all defined plots, add more if desired
         "State-Of-Charge": plot_soc,
         "Distribution-Of-Power": plot_dop,
+        "Elena Plot":elena_plot
     }
 )
 
@@ -44,6 +46,7 @@ INPUT_FIELDS: list[str] = (
         "Scenario(s) (seperate with ',' or write 'All')",
         "Timeseries Sheet Name",
         "Param Analysis Sheet Name",
+        "Elena's Input",
     ]
 )
 
@@ -52,6 +55,7 @@ STRING_BASED: list[str] = (
         "Scenario(s) (seperate with ',' or write 'All')",
         "Timeseries Sheet Name",
         "Param Analysis Sheet Name",
+        "Elena's Input",
     ]
 )
 
@@ -59,7 +63,7 @@ CHOICE_MATRIX: dict[str, list[str]] = (
     {  # Defines the different case types, and for each case type the available methods, add if desired
         "Pure Wind": ["IMV METHOD", "BV METHOD"], # methods 0 and 1 
         "Mixed Wind and Solar": ["PARKWIND METHOD"], # method 2
-        "Pure Solar": ["TO BE DETERMINED"],
+        "Imagine Case": ["Elena Method"],
     }
 )
 
@@ -68,6 +72,7 @@ METHOD_SET: list[Callable[..., None]] =(
         imv_method, # method 0
         bv_method, # method 1
         parkwind_method, # method 2
+        elena_method, 
     ]
 )
 

@@ -342,3 +342,7 @@ def plot_sankee(
     fig.show()
     return
 
+
+def elena_plot(business_case, scenario_index, debug_mode):
+    log_print(business_case.variable_name)
+    return 
