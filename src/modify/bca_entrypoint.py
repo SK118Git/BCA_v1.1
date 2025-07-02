@@ -9,12 +9,11 @@ from typing import Any
 # Internal Imports
 from modify.bca_class import Business_Case
 from methods.general_method import general_method
-from methods.bv_method import bv_method
-from methods.imv_method import imv_method
 from libs.extra import find_scenario_index
 from libs.excel import force_excel_calc, save_to_excel
 from libs.logger import log_print
 from frontend.popup import Progress_Popup
+from modify.settings import METHOD_SET
 
 # ============================================================================================================================
 
@@ -115,21 +114,7 @@ def launch_analysis_new(
         except Exception:
             pass
 
-    if business_case.method == 0:
-        log_print("Using Method 0")
-        imv_method(business_case, scenario_index)
-    elif business_case.method == 1:
-        log_print("Using Method 1")
-        bv_method(business_case, scenario_index)
-    elif business_case.method == 2:
-        # log_print("Using Method 2")
-        # parkwind_method(business_case, scenario_index)
-        general_method(
-            business_case, scenario_index, debug_mode
-        )  # the parkwind only method is broken and idk why. but the general one works
+    log_print(f"Using (non-general) method {business_case.method}")
+    METHOD_SET[business_case.method](business_case, scenario_index, debug_mode)
 
-    # Add your methods here following the same format
-    # Note: Remember! the value of the method (0, 1, 2, ...) depends on the order of its definition in settings.py in the Choice Matrix,
-    # counting from left to right, top to bottom, starting at 0
-    # Read the instructions.pdf file for more details
     return

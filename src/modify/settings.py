@@ -7,6 +7,9 @@ from typing import Callable
 
 # ============================================================================================================================
 # Internal library imports
+from methods.bv_method import bv_method
+from methods.imv_method import imv_method
+from methods.parkwind_method import parkwind_method
 from modify.plots import plot_dop, plot_soc
 
 # ============================================================================================================================
@@ -54,10 +57,18 @@ STRING_BASED: list[str] = (
 
 CHOICE_MATRIX: dict[str, list[str]] = (
     {  # Defines the different case types, and for each case type the available methods, add if desired
-        "Pure Wind": ["IMV Method", "BV METHOD"],
-        "Mixed Wind and Solar": ["PARKWIND METHOD"],
-        "Pure Solar": ["TO BE IMPLEMENTED"],
+        "Pure Wind": ["IMV METHOD", "BV METHOD"], # methods 0 and 1 
+        "Mixed Wind and Solar": ["PARKWIND METHOD"], # method 2
+        "Pure Solar": ["TO BE DETERMINED"],
     }
+)
+
+METHOD_SET: list[Callable[..., None]] =(
+    [
+        imv_method, # method 0
+        bv_method, # method 1
+        parkwind_method, # method 2
+    ]
 )
 
 

@@ -6,7 +6,7 @@ from libs.extra import coerce_byte, safe_irr
 from libs.logger import log_print
 
 
-def parkwind_method(business_case, scenario_index):
+def parkwind_method(business_case, scenario_index, debug_mode:bool):
     ppa_price = business_case.param_df.loc[scenario_index, "PPA Price"]
     solar_MWp = business_case.param_df.loc[scenario_index, "Solar Installed (MWp)"]
     bal_per = business_case.param_df.loc[

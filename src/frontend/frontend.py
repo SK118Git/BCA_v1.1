@@ -167,7 +167,7 @@ class BCA_App:
 
         self.load_vals_button = ttk.Button(
             self.root,
-            text="Do you want to load the values from the sheet?",
+            text="Load values from sheet named:",
             command=self.load_vals,
         )
         self.load_vals_button.grid(

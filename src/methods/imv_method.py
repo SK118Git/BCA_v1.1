@@ -5,7 +5,7 @@ from libs.extra import coerce_byte
 from modify.bca_class import Business_Case
 
 
-def imv_method(business_case: Business_Case, scenario_index: int):
+def imv_method(business_case: Business_Case, scenario_index: int, debug_mode:bool):
     # %% Generate Intra-Day Prices
 
     # Manipulate Imbalance prices to get an approxiamtion for Intraday prices (from ChatGPT):

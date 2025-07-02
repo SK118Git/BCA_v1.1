@@ -147,7 +147,7 @@ def read_pdf(file_name: str, pdf_sheetname: str) -> pd.DataFrame:
 
 
 # ============================================================================================================================
-
+# THis mess is here to avoid import errors
 
 def calculate_ap(df: pd.DataFrame, method: int) -> pd.Series:
     """
